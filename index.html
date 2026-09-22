@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#EDEFEA">
+  <meta name="description" content="用一杯咖啡，接住你此刻的心情。">
+  <title>此刻咖啡馆</title>
+</head>
+<body>
+<main class="shop">
+  <div class="sign">
+    <button class="back" id="back" type="button" aria-label="不改了，返回">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg>不改了
+    </button>
+    <b>此刻咖啡馆</b><span id="today"></span>
+  </div>
+
+  <div class="bar" aria-hidden="true">
+    <svg id="cup" viewBox="0 0 200 270" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="inner"><path d="M33,29 L167,29 L152,236 Q151,242 144,242 L56,242 Q49,242 48,236 Z"/></clipPath>
+        <clipPath id="fillclip"><rect id="fillrect" x="0" y="242" width="200" height="0"/></clipPath>
+      </defs>
+      <ellipse class="shadow" cx="100" cy="258" rx="62" ry="6"/>
+      <g class="steam" id="steam" style="display:none">
+        <path d="M80,14 q-7,-9 0,-18 q7,-9 0,-18"/>
+        <path d="M100,12 q-7,-9 0,-18 q7,-9 0,-18"/>
+        <path d="M120,14 q-7,-9 0,-18 q7,-9 0,-18"/>
+      </g>
+      <rect id="stream" x="97" y="-30" width="6" rx="3" height="0" opacity="0"/>
+      <g clip-path="url(#inner)">
+        <g clip-path="url(#fillclip)"><g id="liquid"></g></g>
+        <g id="toppings"></g>
+      </g>
+      <path class="outline" d="M28,25 C70,23.5 128,26 172,24.5 L157,238 Q155.5,248.5 145,248 L55,248.5 Q45,248 43.5,238 Z"/>
+      <path class="outline2" d="M30,27 L45,236"/>
+      <path class="outline2" d="M170,27 L155.5,236"/>
+      <g id="garnish"></g>
+    </svg>
+  </div>
+
+  <section id="order">
+    <h1>此刻的你<br>适合哪一杯</h1>
+    <p class="lede">点几下就好，剩下的交给咖啡师。</p>
+    <div class="q">
+      <h2>电量还剩多少</h2>
+      <div class="battery"><div class="cells" id="cells" role="radiogroup" aria-label="电量"></div><output id="energyText"></output></div>
+    </div>
+    <div class="q">
+      <h2>现在是什么感觉 <small>最多选三个</small></h2>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="q">
+      <h2>想跟咖啡师说一句吗 <small>可以不写</small></h2>
+      <input class="say" id="say" maxlength="60" placeholder="比如：方案又被打回来了" autocomplete="off">
+    </div>
+    <button class="primary" id="brew" disabled>先选一个感觉</button>
+  </section>
+
+  <section id="result" hidden>
+    <p class="status" id="status" role="status"></p>
+    <div class="reveal" id="headBlock">
+      <div class="name" id="drinkName"></div>
+      <p class="real" id="drinkReal"></p>
+      <p class="why" id="why"></p>
+      <details class="drink-info" id="drinkInfoDetails">
+        <summary>这杯是什么</summary>
+        <dl>
+          <div><dt>口感</dt><dd id="taste"></dd></div>
+          <div><dt>咖啡因</dt><dd id="caffeine"></dd></div>
+          <div><dt>适合</dt><dd id="moment"></dd></div>
+        </dl>
+      </details>
+      <button class="tweak" id="tweak" type="button" hidden>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L6 13H3v-3z"/></svg>不太对，我改一下
+      </button>
+    </div>
+    <div class="sleeve reveal" id="sleeveBlock"><p class="note wait" id="note">咖啡师在写杯套……</p></div>
+    <div class="reveal" id="receiptBlock">
+      <div class="receipt" id="receipt"></div>
+      <div class="actions">
+        <button class="primary" id="save" hidden>保存小票</button>
+        <button class="ghost" id="again">再点一杯</button>
+      </div>
+      <p class="toast" id="toast" role="status"></p>
+    </div>
+  </section>
+
+  <section id="edit" hidden>
+    <div class="whisper" aria-live="polite">
+      <p class="hand" id="whisper">想怎么改都行，我看着呢。</p>
+      <p class="hint" id="whisperHint">每改一下，杯子都会跟着变</p>
+    </div>
+    <div class="live"><b id="liveName"></b><span id="liveSpec"></span></div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="opts" id="opts" role="radiogroup"></div>
+  </section>
+</main>
+
+<div class="dock">
+  <div class="dock-inner">
+    <button class="ghost" id="swap" type="button">换一杯</button>
+    <button class="primary" id="done" type="button">就这杯</button>
+  </div>
+</div>
+
+<div class="save-overlay" id="saveOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+  <div class="save-sheet">
+    <div class="save-head"><b id="saveTitle">长按保存小票</b><button id="closeSave" type="button" aria-label="关闭">×</button></div>
+    <img id="savedReceipt" alt="此刻咖啡馆小票图片">
+    <p>长按图片，选“存储到照片”。</p>
+  </div>
+</div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

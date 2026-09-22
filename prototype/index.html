@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>此刻咖啡馆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDEFEA; --surface:#F8F8F4; --ink:#2B2420; --ink-2:#8A837A; --line:#D9DAD3;
+  --brand:#2E2520; --on-brand:#F5F3EE; --kraft:#DCC7A6; --kraft-ink:#3D2C1E; --paper:#FCFBF8;
+  --cup:#2E2520; --tab-on:#2E2520;
+  --serif:"Noto Serif SC","Songti SC",serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --hand:"Ma Shan Zheng","Kaiti SC","STKaiti",cursive;
+  --mono:"JetBrains Mono","Noto Sans SC",ui-monospace,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A1816; --surface:#23201D; --ink:#EFE9E1; --ink-2:#9C948A; --line:#36322D;
+    --brand:#EFE9E1; --on-brand:#1A1816; --cup:#E6DFD5; --tab-on:#EFE9E1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1A1816; --surface:#23201D; --ink:#EFE9E1; --ink-2:#9C948A; --line:#36322D;
+  --brand:#EFE9E1; --on-brand:#1A1816; --cup:#E6DFD5; --tab-on:#EFE9E1;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:400;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:8px}
+
+.shop{max-width:440px;margin:0 auto;padding:18px 22px 56px}
+body.editing .shop{padding-bottom:120px}
+.sign{display:flex;justify-content:space-between;align-items:center;height:32px;font-size:13px;color:var(--ink-2)}
+.sign b{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.12em}
+.back{border:0;background:none;padding:6px 8px 6px 0;font-size:14px;color:var(--ink);cursor:pointer;display:none}
+body.editing .back{display:inline-flex;align-items:center;gap:4px}
+body.editing .sign b{display:none}
+
+.bar{display:flex;justify-content:center;margin:22px 0 4px;transition:margin .4s}
+#cup{width:min(56vw,210px);height:auto;overflow:visible;transition:width .45s cubic-bezier(.3,.7,.2,1)}
+body.editing #cup{width:min(40vw,150px)}
+body.editing .bar{margin:6px 0 0}
+.outline{fill:none;stroke:var(--cup);stroke-width:1.7;stroke-linejoin:round;stroke-linecap:round}
+.outline2{fill:none;stroke:var(--cup);stroke-width:1;opacity:.28;stroke-linecap:round}
+.shadow{fill:var(--ink);opacity:.07}
+.steam path{fill:none;stroke:var(--ink-2);stroke-width:1.8;stroke-linecap:round;opacity:0;animation:steam 3.4s ease-in-out infinite}
+.steam path:nth-child(2){animation-delay:1.1s}
+.steam path:nth-child(3){animation-delay:2.2s}
+@keyframes steam{0%{opacity:0;transform:translateY(6px)}45%{opacity:.5}100%{opacity:0;transform:translateY(-14px)}}
+.fade-in{animation:fi .35s ease both}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,7.4vw,32px);line-height:1.35;margin:18px 0 6px;text-align:center;letter-spacing:.04em}
+.lede{margin:0 0 34px;text-align:center;color:var(--ink-2);font-size:14px;font-weight:300}
+.q{margin:0 0 30px}
+.q h2{font-size:15px;font-weight:500;margin:0 0 14px;display:flex;justify-content:space-between;align-items:baseline}
+.q h2 small{font-weight:300;font-size:12px;color:var(--ink-2)}
+.battery{display:flex;align-items:center;gap:14px}
+.cells{display:flex;gap:4px;padding:4px;border:1.5px solid var(--ink);border-radius:10px;position:relative}
+.cells::after{content:"";position:absolute;right:-6px;top:50%;width:4px;height:12px;transform:translateY(-50%);background:var(--ink);border-radius:0 3px 3px 0}
+.cell{width:32px;height:26px;border:0;border-radius:5px;background:transparent;cursor:pointer;transition:background .25s}
+.cell.on{background:var(--ink)}
+.battery output{font-size:14px;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:8px 15px;border-radius:999px;font-size:14px;cursor:pointer;transition:background .2s,color .2s,border-color .2s,transform .15s}
+.chip[aria-pressed="true"]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.chip:disabled{opacity:.35;cursor:not-allowed}
+.chip:not(:disabled):active{transform:scale(.96)}
+.say{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:10px 2px;font:15px var(--sans);color:var(--ink)}
+.say:focus{outline:none;border-color:var(--ink)}
+.say::placeholder{color:var(--ink-2);opacity:.75}
+.primary{width:100%;border:0;border-radius:999px;background:var(--brand);color:var(--on-brand);padding:16px;font-size:16px;font-weight:500;cursor:pointer;letter-spacing:.08em;transition:opacity .2s,transform .15s}
+.primary:disabled{opacity:.3;cursor:not-allowed}
+.primary:not(:disabled):active{transform:scale(.98)}
+
+[hidden]{display:none!important}
+
+.status{text-align:center;color:var(--ink-2);font-size:13px;min-height:18px;margin:6px 0 0;font-weight:300}
+.name{font-family:var(--serif);font-weight:600;font-size:clamp(24px,6.8vw,29px);text-align:center;margin:8px 0 6px;line-height:1.35;letter-spacing:.02em}
+.real{text-align:center;margin:0;color:var(--ink-2);font-size:13px}
+.why{text-align:center;margin:14px auto 0;max-width:21em;font-size:14px;line-height:1.8;font-weight:300}
+.tweak{display:flex;margin:16px auto 0;align-items:center;gap:6px;border:1px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;font-size:13px;color:var(--ink);cursor:pointer;transition:border-color .2s}
+.tweak:hover{border-color:var(--ink)}
+.tweak svg{width:14px;height:14px}
+.reveal{opacity:0;transform:translateY(8px);transition:opacity .6s,transform .6s}
+.reveal.in{opacity:1;transform:none}
+
+.sleeve{position:relative;margin:30px 8px 34px;padding:22px 22px 20px;background:var(--kraft);color:var(--kraft-ink);border-radius:3px;transform:rotate(-1deg);
+  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 2px,transparent 2px 6px);
+  box-shadow:0 10px 22px -14px rgba(61,44,30,.55)}
+.note{font-family:var(--hand);font-size:22px;line-height:1.7;margin:0;min-height:3.4em;white-space:pre-line}
+.note.wait{font-family:var(--sans);font-size:13px;opacity:.65;font-weight:300}
+
+.receipt{position:relative;background:var(--paper);color:#2B2420;font-family:var(--mono);font-size:12.5px;line-height:1.8;padding:26px 22px 24px;margin:0 6px}
+.receipt::before,.receipt::after{content:"";position:absolute;left:0;right:0;height:8px;background-size:12px 8px;background-repeat:repeat-x}
+.receipt::before{top:-8px;background-image:linear-gradient(135deg,transparent 50%,var(--paper) 50%),linear-gradient(225deg,transparent 50%,var(--paper) 50%);background-position:0 0,6px 0}
+.receipt::after{bottom:-8px;background-image:linear-gradient(45deg,transparent 50%,var(--paper) 50%),linear-gradient(315deg,transparent 50%,var(--paper) 50%);background-position:0 0,6px 0}
+.r-head{text-align:center;color:#6A615A}
+.r-head b{display:block;font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:.24em;color:#2B2420;margin-bottom:2px}
+.r-cut{border:0;border-top:1px dashed #A79D94;margin:12px 0}
+.r-row{display:flex;justify-content:space-between;gap:12px}
+.r-name{font-family:var(--serif);font-weight:600;font-size:15px}
+.r-sub{padding-left:1.1em;color:#6A615A}
+.r-note{font-family:var(--hand);font-size:18px;line-height:1.6;white-space:pre-line}
+.r-foot{text-align:center;color:#6A615A}
+.actions{display:flex;gap:10px;margin-top:32px}
+.actions button{flex:1;padding:14px;border-radius:999px;font-size:15px;font-weight:500;cursor:pointer}
+.ghost{border:1px solid var(--ink);background:transparent}
+.toast{text-align:center;font-size:12px;color:var(--ink-2);min-height:18px;margin-top:10px}
+
+.whisper{text-align:center;min-height:62px;margin:8px 0 2px}
+.whisper .hand{font-family:var(--hand);font-size:20px;line-height:1.5;color:var(--ink);margin:0}
+.whisper .hint{font-size:12px;color:var(--ink-2);margin:2px 0 0;font-weight:300}
+.live{text-align:center;margin:8px 0 18px}
+.live b{font-family:var(--serif);font-weight:600;font-size:18px}
+.live span{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}
+
+.tabs{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);margin:0 -4px}
+.tab{flex:1;border:0;background:none;padding:10px 2px 12px;cursor:pointer;position:relative;text-align:center;color:var(--ink-2)}
+.tab em{display:block;font-style:normal;font-size:14px;font-weight:500}
+.tab small{display:block;font-size:11px;margin-top:2px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:30%;right:30%;bottom:-1px;height:2px;border-radius:2px;background:var(--tab-on)}
+.tab .dot{position:absolute;top:8px;right:18%;width:5px;height:5px;border-radius:50%;background:#C77B4A}
+
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0 0}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:13px 14px;cursor:pointer;transition:border-color .2s,transform .15s,background .2s;position:relative}
+.opt:active{transform:scale(.97)}
+.opt[aria-checked="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 .5px var(--ink)}
+.opt:disabled{opacity:.4;cursor:not-allowed}
+.sw{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.08)}
+.opt b{display:block;font-size:14px;font-weight:500}
+.opt span{display:block;font-size:11.5px;color:var(--ink-2);margin-top:2px;line-height:1.4}
+.opt .tick{position:absolute;top:9px;right:10px;width:14px;height:14px;opacity:0;transition:opacity .2s}
+.opt[aria-checked="true"] .tick{opacity:1}
+.opt-note{grid-column:1/-1;font-size:12px;color:var(--ink-2);margin:2px 2px 0;font-weight:300}
+
+.dock{position:fixed;left:0;right:0;bottom:0;padding:12px 22px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 70%,transparent);display:none}
+body.editing .dock{display:block}
+.dock-inner{max-width:396px;margin:0 auto;display:flex;gap:10px}
+.dock .ghost{flex:0 0 36%;padding:14px;border-radius:999px;font-size:15px;cursor:pointer}
+.dock .primary{flex:1}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="shop">
+  <div class="sign">
+    <button class="back" id="back" type="button" aria-label="不改了，返回">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg>不改了
+    </button>
+    <b>此刻咖啡馆</b><span id="today"></span>
+  </div>
+
+  <div class="bar" aria-hidden="true">
+    <svg id="cup" viewBox="0 0 200 270" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="inner"><path d="M33,29 L167,29 L152,236 Q151,242 144,242 L56,242 Q49,242 48,236 Z"/></clipPath>
+        <clipPath id="fillclip"><rect id="fillrect" x="0" y="242" width="200" height="0"/></clipPath>
+      </defs>
+      <ellipse class="shadow" cx="100" cy="258" rx="62" ry="6"/>
+      <g class="steam" id="steam" style="display:none">
+        <path d="M80,14 q-7,-9 0,-18 q7,-9 0,-18"/>
+        <path d="M100,12 q-7,-9 0,-18 q7,-9 0,-18"/>
+        <path d="M120,14 q-7,-9 0,-18 q7,-9 0,-18"/>
+      </g>
+      <rect id="stream" x="97" y="-30" width="6" rx="3" height="0" opacity="0"/>
+      <g clip-path="url(#inner)">
+        <g clip-path="url(#fillclip)"><g id="liquid"></g></g>
+        <g id="toppings"></g>
+      </g>
+      <path class="outline" d="M28,25 C70,23.5 128,26 172,24.5 L157,238 Q155.5,248.5 145,248 L55,248.5 Q45,248 43.5,238 Z"/>
+      <path class="outline2" d="M30,27 L45,236"/>
+      <path class="outline2" d="M170,27 L155.5,236"/>
+      <g id="garnish"></g>
+    </svg>
+  </div>
+
+  <section id="order">
+    <h1>此刻的你<br>适合哪一杯</h1>
+    <p class="lede">点几下就好，剩下的交给咖啡师。</p>
+    <div class="q">
+      <h2>电量还剩多少</h2>
+      <div class="battery"><div class="cells" id="cells" role="radiogroup" aria-label="电量"></div><output id="energyText"></output></div>
+    </div>
+    <div class="q">
+      <h2>现在是什么感觉 <small>最多选三个</small></h2>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="q">
+      <h2>想跟咖啡师说一句吗 <small>可以不写</small></h2>
+      <input class="say" id="say" maxlength="60" placeholder="比如：方案又被打回来了" autocomplete="off">
+    </div>
+    <button class="primary" id="brew" disabled>先选一个感觉</button>
+  </section>
+
+  <section id="result" hidden>
+    <p class="status" id="status" role="status"></p>
+    <div class="reveal" id="headBlock">
+      <div class="name" id="drinkName"></div>
+      <p class="real" id="drinkReal"></p>
+      <p class="why" id="why"></p>
+      <button class="tweak" id="tweak" type="button" hidden>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L6 13H3v-3z"/></svg>不太对，我改一下
+      </button>
+    </div>
+    <div class="sleeve reveal" id="sleeveBlock"><p class="note wait" id="note">咖啡师在写杯套……</p></div>
+    <div class="reveal" id="receiptBlock">
+      <div class="receipt" id="receipt"></div>
+      <div class="actions">
+        <button class="primary" id="save" hidden>保存小票</button>
+        <button class="ghost" id="again">再点一杯</button>
+      </div>
+      <p class="toast" id="toast" role="status"></p>
+    </div>
+  </section>
+
+  <section id="edit" hidden>
+    <div class="whisper" aria-live="polite">
+      <p class="hand" id="whisper">想怎么改都行，我看着呢。</p>
+      <p class="hint" id="whisperHint">每改一下，杯子都会跟着变</p>
+    </div>
+    <div class="live"><b id="liveName"></b><span id="liveSpec"></span></div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="opts" id="opts" role="radiogroup"></div>
+  </section>
+</main>
+
+<div class="dock">
+  <div class="dock-inner">
+    <button class="ghost" id="swap" type="button">换一杯</button>
+    <button class="primary" id="done" type="button">就这杯</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const ENERGY=["快关机了","撑着呢","还行","挺有劲","满格"];
+const FEELINGS=["累了","有点烦","焦虑","委屈","想哭","想被抱抱","孤单","平静","开心","有点期待","空空的","被夸了"];
+const SWEETS=["不加糖","少糖","半糖","标准糖"];
+
+const DRINKS={
+  americano:{real:"美式",m:{base:"esp",milk:"none"},temps:["冰","热"]},
+  oat:{real:"燕麦拿铁",m:{milk:"oat"},temps:["冰","热"]},
+  salted:{real:"海盐焦糖拿铁",m:{milk:"milk",tops:["salt","caramel"]},temps:["热","冰"]},
+  mocha:{real:"摩卡",m:{milk:"milk",tops:["cocoa"]},temps:["热","冰"]},
+  macchiato:{real:"焦糖玛奇朵",m:{milk:"milk",tops:["caramel"]},temps:["冰","热"]},
+  flatwhite:{real:"馥芮白",m:{milk:"milk"},temps:["热"]},
+  orange:{real:"橙C美式",m:{base:"orange",milk:"none",tops:["orange"]},temps:["冰"]},
+  decaf:{real:"低因拿铁",m:{milk:"milk",strength:"decaf"},temps:["热","冰"]},
+  cold:{real:"冷萃",m:{base:"cold",milk:"none"},temps:["冰"]},
+  coconut:{real:"生椰拿铁",m:{milk:"coco"},temps:["冰"]},
+  dirty:{real:"Dirty",m:{milk:"milk"},temps:["冰"]}
+};
+const WHY={
+  americano:"没有奶也没有糖，苦得很干脆，适合脑子乱的时候。",oat:"燕麦奶很柔，咖啡味不冲，喝起来不费力气。",
+  salted:"一点咸，一点甜，和现在的心情刚好对得上。",mocha:"巧克力垫在底下，苦的时候有个托底。",
+  macchiato:"焦糖在最上面，第一口就是甜的。",flatwhite:"奶少咖啡多，口感顺，提神又不刺激。",
+  orange:"橙汁的酸甜把苦味提亮了，喝着有精神。",decaf:"咖啡因很少，心跳不用跟着赶。",
+  cold:"冷萃不酸不苦，很安静的一杯。",coconut:"椰乳甜得很淡，像旁边坐了个人。",dirty:"冰牛奶上浮着一层浓缩，第一口就很过瘾。"
+};
+const SCORE={
+  "累了":{flatwhite:2,dirty:2,oat:1,cold:1},"有点烦":{americano:3,orange:2,cold:1},
+  "焦虑":{decaf:3,oat:2,cold:-3,americano:-1},"委屈":{mocha:3,salted:2},"想哭":{salted:3,mocha:2},
+  "想被抱抱":{mocha:3,oat:2,decaf:1},"孤单":{coconut:2,oat:2,mocha:1},"平静":{flatwhite:2,oat:2,dirty:1},
+  "开心":{macchiato:3,orange:2,coconut:1},"有点期待":{orange:3,dirty:2,macchiato:1},
+  "空空的":{cold:2,americano:2,flatwhite:1},"被夸了":{macchiato:2,dirty:2,coconut:1}
+};
+
+const OPTS={
+  temp:{label:"温度",items:[
+    {v:"冰",t:"冰",mood:"想冷静一下",sw:"#DCE7EC"},
+    {v:"热",t:"热",mood:"想被暖一暖",sw:"#EBCBA9"}]},
+  sweet:{label:"甜度",items:[
+    {v:0,t:"不加糖",mood:"不想被哄",sw:"#F3F1EC"},
+    {v:1,t:"少糖",mood:"一点点就好",sw:"#F1E4CC"},
+    {v:2,t:"半糖",mood:"想被照顾一下",sw:"#EACD9E"},
+    {v:3,t:"标准糖",mood:"今天需要甜的",sw:"#DDB073"}]},
+  strength:{label:"浓度",items:[
+    {v:"single",t:"单份浓缩",mood:"刚刚好就好",sw:"#8A5A3C"},
+    {v:"double",t:"双份浓缩",mood:"今天还得硬撑",sw:"#4A2E20"},
+    {v:"decaf",t:"低因",mood:"想让自己慢下来",sw:"#B89680"}]},
+  milk:{label:"奶",items:[
+    {v:"milk",t:"牛奶",mood:"想要熟悉的味道",sw:"#F2EADC"},
+    {v:"oat",t:"燕麦奶",mood:"想温柔一点",sw:"#E4D3B7"},
+    {v:"coco",t:"椰乳",mood:"想轻松一点",sw:"#F7F4EC"},
+    {v:"none",t:"不加奶",mood:"想要干脆一点",sw:"#6B4530"}]},
+  tops:{label:"小料",multi:true,items:[
+    {v:"salt",t:"海盐",mood:"有点想哭",sw:"#FFFFFF"},
+    {v:"caramel",t:"焦糖",mood:"有件小事挺开心",sw:"#C98A42"},
+    {v:"cocoa",t:"可可粉",mood:"想被抱抱",sw:"#6A3B25"},
+    {v:"orange",t:"橙片",mood:"想打起精神",sw:"#F2A33B"},
+    {v:"cinnamon",t:"肉桂",mood:"有点烦，想叛逆一下",sw:"#9A5B35"}]}
+};
+const TAB_ORDER=["temp","sweet","strength","milk","tops"];
+
+let energy=3; const picked=new Set();
+let order=null, model=null, draft=null, baseDraft=null, edits=[];
+let swapped=false, rankIdx=0, activeTab="temp", token=0;
+
+const now=()=>new Date();
+const wk=["周日","周一","周二","周三","周四","周五","周六"];
+const p2=n=>String(n).padStart(2,"0");
+function period(h){return h<5?"深夜":h<11?"早上":h<14?"中午":h<18?"下午":h<22?"晚上":"深夜";}
+$("today").textContent=(d=>`${d.getMonth()+1}月${d.getDate()}日 ${wk[d.getDay()]}`)(now());
+
+const cells=$("cells");
+for(let i=1;i<=5;i++){
+  const b=document.createElement("button");b.type="button";b.className="cell";
+  b.setAttribute("role","radio");b.setAttribute("aria-label",`${i}格，${ENERGY[i-1]}`);
+  b.onclick=()=>{energy=i;paintEnergy();};cells.appendChild(b);
+}
+function paintEnergy(){[...cells.children].forEach((b,i)=>{b.classList.toggle("on",i<energy);b.setAttribute("aria-checked",i+1===energy);});$("energyText").textContent=ENERGY[energy-1];}
+paintEnergy();
+const chips=$("chips");
+FEELINGS.forEach(f=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=f;b.setAttribute("aria-pressed","false");
+  b.onclick=()=>{picked.has(f)?picked.delete(f):picked.add(f);paintChips();};chips.appendChild(b);});
+function paintChips(){
+  [...chips.children].forEach(b=>{const on=picked.has(b.textContent);b.setAttribute("aria-pressed",on);b.disabled=!on&&picked.size>=3;});
+  $("brew").disabled=!picked.size;$("brew").textContent=picked.size?"帮我调一杯":"先选一个感觉";
+}
+paintChips();
+
+function makeOrder(){
+  const d=now(),h=d.getHours(),night=h>=18||h<5,feels=[...picked];
+  const s={};Object.keys(DRINKS).forEach(k=>s[k]=0);
+  feels.forEach((f,i)=>Object.entries(SCORE[f]).forEach(([k,v])=>s[k]+=v*(i?1:1.2)));
+  if(energy<=2){s.flatwhite+=1;if(!night)s.cold+=1;}
+  if(energy>=4){s.orange+=1;s.macchiato+=1;}
+  if(night){s.decaf+=2;s.cold-=3;s.americano-=1;}
+  const rank=Object.keys(s).sort((a,b)=>s[b]-s[a]);
+  return {time:d,night,period:period(h),feelings:feels,energy,energyText:ENERGY[energy-1],say:$("say").value.trim(),rank};
+}
+function modelFrom(key,o){
+  const dk=DRINKS[key],m=dk.m,feels=o.feelings;
+  let temp=dk.temps[0];
+  const warm=feels.some(f=>["想被抱抱","孤单","委屈","想哭"].includes(f));
+  const cool=feels.some(f=>["有点烦","焦虑"].includes(f))&&!warm;
+  if(warm&&dk.temps.includes("热"))temp="热";else if(cool&&dk.temps.includes("冰"))temp="冰";
+  const sw=feels.filter(f=>["委屈","想哭","想被抱抱","孤单","开心","被夸了"].includes(f)).length;
+  const bitter=feels.some(f=>["有点烦","空空的"].includes(f));
+  const sweet=sw>=2?2:sw===1?1:bitter?0:1;
+  const decaf=o.night||feels.includes("焦虑")||m.strength==="decaf";
+  const strength=decaf?"decaf":(o.energy<=2?"double":"single");
+  return {key,real:dk.real,base:m.base||"esp",milk:m.milk,tops:new Set(m.tops||[]),temp,sweet,strength};
+}
+const clone=m=>({...m,tops:new Set(m.tops)});
+
+function realName(m){
+  if(m.real)return m.real;
+  const t=m.tops;
+  const pre=t.has("salt")?"海盐":t.has("caramel")?"焦糖":t.has("cinnamon")?"肉桂":(t.has("orange")&&m.base!=="orange")?"橙香":"";
+  if(m.milk==="none"){
+    if(m.base==="orange")return "橙C美式";
+    if(m.base==="cold")return pre+"冷萃";
+    return t.has("cocoa")?"可可美式":pre+"美式";
+  }
+  const cold=m.base==="cold"?"冷萃":"";
+  if(t.has("cocoa"))return pre+cold+({milk:"摩卡",oat:"燕麦摩卡",coco:"生椰摩卡"}[m.milk]);
+  return pre+cold+({milk:"拿铁",oat:"燕麦拿铁",coco:"生椰拿铁"}[m.milk]);
+}
+function strengthText(m){
+  if(m.base==="cold")return m.strength==="decaf"?"低因冷萃":m.strength==="double"?"冷萃加浓":"冷萃原液";
+  return {single:"单份浓缩",double:"双份浓缩",decaf:"低因浓缩"}[m.strength];
+}
+const MILK_T={milk:"牛奶",oat:"燕麦奶",coco:"椰乳",none:"不加奶"};
+const TOP_T={salt:"海盐",caramel:"焦糖",cocoa:"可可粉",orange:"橙片",cinnamon:"肉桂"};
+function specLine(m){return `${m.temp}，${SWEETS[m.sweet]}，${strengthText(m)}，${MILK_T[m.milk]}`;}
+function topsLine(m){return [...m.tops].map(t=>TOP_T[t]).join("、");}
+
+const NS="http://www.w3.org/2000/svg";
+function el(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);p&&p.appendChild(e);return e;}
+const hex=h=>{const n=parseInt(h.slice(1),16);return [n>>16,n>>8&255,n&255];};
+const rgb=c=>`rgb(${c.map(Math.round).join(",")})`;
+const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+const TOP=64,BOT=242,H=BOT-TOP;
+const ORDER=["syrup","choco","orangej","coffee","milk","esp","foam","cap"];
+
+function layersOf(m){
+  const L={},t=m.tops;
+  if(t.has("caramel"))L.syrup={c:"#C98A42",f:.07};
+  if(t.has("cocoa"))L.choco={c:"#5E3424",f:.12};
+  const espC=m.strength==="decaf"?"#7A4E36":m.base==="cold"?"#3E2619":"#55321F";
+  if(m.milk==="none"){
+    if(m.base==="orange"){L.orangej={c:"#F0A444",f:.46};L.coffee={c:"#4E2F1D",f:.54};}
+    else L.coffee={c:m.strength==="decaf"?"#6A4430":m.base==="cold"?"#3A2418":"#4E2F1D",f:1};
+  }else{
+    const mc={milk:"#F0E6D6",oat:"#E4D3B6",coco:"#F5F1E8"}[m.milk];
+    L.milk={c:t.has("cocoa")?"#CFAE8E":mc,f:.6};
+    L.esp={c:espC,f:m.strength==="double"?.32:.2};
+    if(m.temp==="热")L.foam={c:"#F8F3EA",f:.11};
+  }
+  if(t.has("salt")&&m.milk!=="none")L.cap={c:"#FBF8F2",f:.12};
+  const out={};ORDER.forEach(id=>{out[id]=L[id]?{c:hex(L[id].c),f:L[id].f}:{c:null,f:0};});
+  return out;
+}
+let shown=null;
+function drawLayers(st){
+  const g=$("liquid");g.innerHTML="";
+  const sum=ORDER.reduce((a,id)=>a+st[id].f,0)||1;
+  let y=BOT;const bands=[];
+  ORDER.forEach(id=>{const L=st[id];if(L.f<=.001||!L.c)return;const h=L.f/sum*H;y-=h;bands.push({y,h,c:L.c});});
+  bands.forEach((b,i)=>{
+    const last=i===bands.length-1;
+    el("rect",{x:0,y:last?b.y-6:b.y,width:200,height:b.h+(last?6:0)+1,fill:rgb(b.c)},g);
+  });
+  bands.slice(1).forEach(b=>el("rect",{x:0,y:b.y+b.h-3,width:200,height:6,fill:rgb(b.c),opacity:.4},g));
+  if(bands.length){const tc=bands[bands.length-1].c;el("ellipse",{cx:100,cy:TOP,rx:70,ry:4.5,fill:rgb(mix(tc,[255,255,255],.2))},g);}
+  return bands;
+}
+let tweenId=0;
+function tweenTo(m,dur=460){
+  const target=layersOf(m);
+  if(!shown||RM){shown=target;drawLayers(shown);return;}
+  const from=JSON.parse(JSON.stringify(shown)),t0=performance.now(),my=++tweenId;
+  (function frame(t){
+    if(my!==tweenId)return;
+    const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);const st={};
+    ORDER.forEach(id=>{const a=from[id],b=target[id];const c=a.c&&b.c?mix(a.c,b.c,e):(b.c||a.c);st[id]={c,f:a.f+(b.f-a.f)*e};});
+    shown=st;drawLayers(st);if(p<1)requestAnimationFrame(frame);else{shown=target;drawLayers(target);}
+  })(t0);
+}
+
+function drawFinish(m,soft){
+  const tp=$("toppings"),gn=$("garnish");tp.innerHTML="";gn.innerHTML="";
+  const fx=n=>{if(soft&&!RM)n.classList.add("fade-in");return n;};
+  if(m.temp==="冰"&&m.key!=="dirty"){
+    [[58,72,16],[92,66,-12],[121,80,14],[75,100,8],[134,106,-9]].forEach(([x,y,r])=>fx(el("rect",{x,y,width:27,height:25,rx:7,fill:"#fff","fill-opacity":.28,stroke:"#fff","stroke-opacity":.75,"stroke-width":1.2,transform:`rotate(${r} ${x+13} ${y+12})`},tp)));
+  }
+  const t=m.tops;
+  if(t.has("caramel"))fx(el("path",{d:"M42,66 C52,58 60,72 72,62 S92,58 100,66 S122,72 132,60 S150,64 158,66",fill:"none",stroke:"#A9652A","stroke-width":2.6,"stroke-linecap":"round"},tp));
+  if(t.has("cocoa")||t.has("salt")||t.has("cinnamon")){
+    const g=fx(el("g",{},tp));
+    const dots=(col,n,r)=>{for(let i=0;i<n;i++)el("circle",{cx:48+Math.random()*104,cy:TOP-3+Math.random()*7,r,fill:col},g);};
+    if(t.has("cocoa"))dots("#6A3B25",22,1.3);
+    if(t.has("salt"))dots("#FFFFFF",20,1.5);
+    if(t.has("cinnamon"))dots("#9A5B35",16,1.1);
+  }
+  if(t.has("orange")){
+    const g=fx(el("g",{transform:"translate(160,36) rotate(-18)"},gn));
+    el("circle",{r:20,fill:"#F2A13B",stroke:"#DE8016","stroke-width":2},g);el("circle",{r:15.5,fill:"#FBC872"},g);
+    for(let a=0;a<8;a++)el("line",{x1:0,y1:0,x2:Math.cos(a*Math.PI/4)*15.5,y2:Math.sin(a*Math.PI/4)*15.5,stroke:"#F2A13B","stroke-width":1.4},g);
+  }
+  if(t.has("cinnamon")){
+    const g=fx(el("g",{transform:"translate(52,10) rotate(-14)"},gn));
+    el("rect",{x:0,y:0,width:9,height:70,rx:4,fill:"#9A5B35"},g);el("line",{x1:4.5,y1:3,x2:4.5,y2:66,stroke:"#6E3D20","stroke-width":1},g);
+  }
+  $("steam").style.display=m.temp==="热"?"":"none";
+}
+function pour(m){
+  return new Promise(res=>{
+    tweenId++;shown=layersOf(m);const bands=drawLayers(shown);
+    $("toppings").innerHTML="";$("garnish").innerHTML="";$("steam").style.display="none";
+    const rect=$("fillrect"),stream=$("stream");
+    if(RM){rect.setAttribute("y",TOP-12);rect.setAttribute("height",H+12);drawFinish(m);return res();}
+    rect.setAttribute("y",BOT);rect.setAttribute("height",0);
+    const dur=2600,t0=performance.now();stream.setAttribute("opacity",1);
+    (function frame(t){
+      const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,1.6),y=BOT-(H+12)*e;
+      rect.setAttribute("y",y);rect.setAttribute("height",BOT-y);
+      const cur=bands.find(b=>y>=b.y-1)||bands[bands.length-1];
+      stream.setAttribute("fill",rgb(cur.c));stream.setAttribute("height",Math.max(0,y+30));
+      if(p>.9)stream.setAttribute("opacity",(1-p)*10);
+      if(p<1)requestAnimationFrame(frame);else{stream.setAttribute("opacity",0);drawFinish(m,true);res();}
+    })(t0);
+  });
+}
+function resetCup(){tweenId++;$("liquid").innerHTML="";$("toppings").innerHTML="";$("garnish").innerHTML="";$("fillrect").setAttribute("y",BOT);$("fillrect").setAttribute("height",0);$("steam").style.display="none";$("stream").setAttribute("opacity",0);shown=null;}
+
+const NAME_FB={americano:"清醒一下美式",oat:"慢慢来燕麦拿铁",salted:"咸咸的海盐拿铁",mocha:"抱一下摩卡",macchiato:"好事多一圈玛奇朵",flatwhite:"歇口气馥芮白",orange:"有盼头橙C美式",decaf:"心跳放慢低因拿铁",cold:"放空冷萃",coconut:"有人陪生椰拿铁",dirty:"小小得意Dirty"};
+const L1=["电量只剩一格，还是来了。","撑着呢，我看得出来。","电量还行，那就慢慢喝。","今天挺有劲嘛。","满格的日子不多，记一下。"];
+const L2={"累了":"这杯不是续命，是让你歇口气。","有点烦":"冰块会化掉的，烦也是。","焦虑":"先喝一口，事情不会跑掉。","委屈":"委屈就委屈吧，这杯甜一点。","想哭":"海盐本来就是咸的，哭也没关系。","想被抱抱":"捧在手里，就当抱一下。","孤单":"一个人喝咖啡，也算有个伴。","平静":"难得安静，别急着喝完。","开心":"有好事就多加一圈焦糖。","有点期待":"期待的事，就像等咖啡滴完。","空空的":"空的时候，先装一杯咖啡进去。","被夸了":"被夸了就收下，不用谦虚。"};
+const EDIT_FB={"想冷静一下":"今天想清醒着过。","想被暖一暖":"捧着它，手先暖起来。","不想被哄":"苦就苦得干脆一点。","一点点就好":"甜一点点，刚好。","想被照顾一下":"多一点甜，是该的。","今天需要甜的":"今天就该甜一点。","刚刚好就好":"不多不少，刚刚好。","今天还得硬撑":"多一份浓缩，也多撑一会儿。","想让自己慢下来":"慢一点，没人催你。","想要熟悉的味道":"熟悉的味道最安心。","想温柔一点":"燕麦奶软软的，对自己也软一点。","想轻松一点":"椰乳淡淡的，心也松一点。","想要干脆一点":"不加奶，干干脆脆。","有点想哭":"撒了海盐，想哭也没关系。","有件小事挺开心":"有好事，焦糖多一圈。","想被抱抱":"可可粉撒满，就当抱一下。","想打起精神":"一片橙子，给你提提神。","有点烦，想叛逆一下":"肉桂有点冲，冲一下也好。","想换个口味":"换个口味，换个心情。"};
+function fallback(o,m){
+  const moods=editMoods();
+  if(moods.length){
+    return {name:realName(m),why:"这杯是照着你现在的心情调的。",note:[`${m.temp}${realName(m)}，${SWEETS[m.sweet]}。`,EDIT_FB[moods[moods.length-1]]||"好，就这杯。","慢慢喝。"]};
+  }
+  return {name:NAME_FB[m.key]||realName(m),why:WHY[m.key]||"",note:[L1[o.energy-1],L2[o.feelings[0]],o.say?"你说的那句，我记在杯套背面了。":"明天见。"]};
+}
+function prompt(o,m){
+  const moods=editMoods();
+  const editPart=moods.length?`
+这杯是客人自己动手调出来的。他调的时候流露出的心情：${moods.join("、")}。
+这是这次最重要的信息，请从这些选择里读出他此刻的心情来写。
+不要提到任何之前的推荐，不要用"换成""改成""原本"这类字眼。就当这杯本来就是他点的。`:"";
+  return `你是一家小咖啡馆里的咖啡师，熟客来点单。请给这杯咖啡起名字、说一句为什么是这杯、再在杯套上写几句话。
+
+客人此刻的状态：
+- 时间：${o.period}
+- 电量（精力）：${o.energy}/5，${o.energyText}
+- 感受：${o.feelings.join("、")}
+- 他想说的话：${o.say||"（没写）"}
+
+这杯咖啡：${realName(m)}，${specLine(m)}${m.tops.size?"，加了"+topsLine(m):""}${editPart}
+
+要求：
+1. name：4 到 10 个字。把此刻的心情和这杯咖啡揉在一起，带一点幽默，不用标点。例子：撑住了燕麦拿铁、被夸后的焦糖玛奇朵。
+2. why：一句话，不超过 28 个字。从咖啡本身说为什么此刻适合它（口感、温度、甜度、咖啡因）。说人话。
+3. note：2 到 3 行，每行不超过 18 个字。像熟客的咖啡师在杯套上随手写的。
+   - 必须提到客人的具体选择（电量、感受、他说的话，或他调的配方），让他觉得被看到了。
+   - 用咖啡的语言说情绪。不说教，不灌鸡汤，不写"加油""一切都会好的"。不用感叹号和 emoji。
+4. 如果客人的话流露出想伤害自己或不想活了，note 不玩咖啡梗，认真温和地说你看到了，请他现在就联系信任的人或当地心理援助热线。
+
+只回复 JSON：{"name":"...","why":"...","note":["...","..."]}`;
+}
+let sP=null,dP=null;
+const cap=n=>{const c=window.claude;return (c&&typeof c.use==="function")?c.use(n).catch(()=>null):Promise.resolve(null);};
+const getSample=()=>sP||(sP=cap("sample"));
+const getDl=()=>dP||(dP=cap("downloads"));
+getSample();getDl().then(d=>{if(d&&window.html2canvas)$("save").hidden=false;});
+async function writeCopy(o,m){
+  const s=await getSample();
+  if(s){try{const r=await s.json(prompt(o,m),{modelTier:"default",cache:false});
+    if(r&&typeof r.name==="string"&&Array.isArray(r.note)&&r.note.length)
+      return {name:r.name.trim().slice(0,16),why:String(r.why||"").trim(),note:r.note.map(x=>String(x).trim()).filter(Boolean).slice(0,3)};
+  }catch(e){}}
+  return fallback(o,m);
+}
+
+function typeNote(lines,my){
+  return new Promise(res=>{
+    const n=$("note");n.classList.remove("wait");const text=lines.join("\n");
+    if(RM){n.textContent=text;return res();}
+    let i=0;n.textContent="";
+    (function step(){if(my!==token)return res();n.textContent=text.slice(0,++i);if(i<text.length)setTimeout(step,text[i-1]==="\n"?260:65);else res();})();
+  });
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function receipt(o,m,copy){
+  const d=o.time,doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);
+  const moods=editMoods();
+  $("receipt").innerHTML=`
+    <div class="r-head"><b>此刻咖啡馆</b>${d.getFullYear()}/${p2(d.getMonth()+1)}/${p2(d.getDate())} ${wk[d.getDay()]} ${p2(d.getHours())}:${p2(d.getMinutes())}<br>单号 No.${String(doy).padStart(3,"0")}${p2(d.getMinutes())}</div>
+    <hr class="r-cut">
+    <div class="r-row"><span class="r-name">${esc(copy.name)}</span><span>×1</span></div>
+    <div class="r-sub">${esc(realName(m))}，${m.temp}，${SWEETS[m.sweet]}</div>
+    <div class="r-sub">${strengthText(m)}，${MILK_T[m.milk]}</div>
+    ${m.tops.size?`<div class="r-sub">加 ${esc(topsLine(m))}</div>`:""}
+    <hr class="r-cut">
+    <div class="r-row"><span>电量</span><span>${"■".repeat(o.energy)}${"□".repeat(5-o.energy)} ${o.energyText}</span></div>
+    <div class="r-row"><span>此刻</span><span>${esc(o.feelings.join("、"))}</span></div>
+    ${moods.length?`<div class="r-row"><span></span><span>${esc(moods.filter(x=>x!=="想换个口味").join("、")||"")}</span></div>`:""}
+    ${o.say?`<div class="r-sub" style="padding:4px 0 0">“${esc(o.say)}”</div>`:""}
+    <hr class="r-cut">
+    <div class="r-note">${esc(copy.note.join("\n"))}</div>
+    <hr class="r-cut">
+    <div class="r-foot">谢谢光临，明天见</div>`;
+}
+async function serve(){
+  const my=++token;
+  ["headBlock","sleeveBlock","receiptBlock"].forEach(id=>$(id).classList.remove("in"));
+  $("tweak").hidden=true;$("note").textContent="咖啡师在写杯套……";$("note").classList.add("wait");$("toast").textContent="";
+  $("status").textContent="正在萃取……";
+  const cp=writeCopy(order,model);
+  await pour(model);if(my!==token)return;
+  $("drinkName").textContent=`${model.temp}${realName(model)}`;
+  $("drinkReal").textContent=specLine(model);$("why").textContent="";
+  $("headBlock").classList.add("in");$("sleeveBlock").classList.add("in");
+  $("status").textContent="咖啡好了，杯套还在写……";
+  const copy=await cp;if(my!==token)return;
+  $("drinkName").textContent=copy.name;$("why").textContent=copy.why;$("status").textContent="";
+  $("drinkReal").textContent=`${realName(model)}，${specLine(model)}`;
+  $("tweak").hidden=false;
+  await typeNote(copy.note,my);if(my!==token)return;
+  receipt(order,model,copy);$("receiptBlock").classList.add("in");
+}
+function show(view){
+  ["order","result","edit"].forEach(v=>$(v).hidden=v!==view);
+  document.body.classList.toggle("editing",view==="edit");
+  window.scrollTo({top:0,behavior:RM?"auto":"smooth"});
+}
+$("brew").onclick=()=>{
+  order=makeOrder();rankIdx=0;edits=[];swapped=false;
+  model=modelFrom(order.rank[0],order);show("result");serve();
+};
+$("again").onclick=()=>{token++;resetCup();picked.clear();paintChips();$("say").value="";edits=[];swapped=false;show("order");};
+
+function editMoods(){const out=[];if(swapped)out.push("想换个口味");edits.forEach(e=>{if(!out.includes(e.mood))out.push(e.mood);});return out;}
+function recordEdit(cat,val,mood){
+  edits=edits.filter(e=>!(e.cat===cat&&(cat!=="tops"||e.val===val)));
+  if(cat==="tops"){ if(draft.tops.has(val)&&!baseDraft.tops.has(val))edits.push({cat,val,mood}); return; }
+  if(draft[cat]!==baseDraft[cat])edits.push({cat,val,mood});
+}
+function paintWhisper(){
+  const moods=editMoods(),w=$("whisper"),h=$("whisperHint");
+  if(!moods.length){w.textContent="想怎么改都行，我看着呢。";h.textContent="每改一下，杯子都会跟着变";}
+  else{w.textContent=moods.slice(-2).join("，")+"。";h.textContent=moods.length>2?`还有 ${moods.length-2} 个小心思，我也记着`:"咖啡师记下了";}
+  if(!RM){w.classList.remove("fade-in");void w.offsetWidth;w.classList.add("fade-in");}
+}
+function paintLive(){$("liveName").textContent=`${draft.temp}${realName(draft)}`;$("liveSpec").textContent=specLine(draft)+(draft.tops.size?`，加${topsLine(draft)}`:"");}
+function valText(cat){
+  if(cat==="temp")return draft.temp;if(cat==="sweet")return SWEETS[draft.sweet];
+  if(cat==="strength")return {single:"单份",double:"双份",decaf:"低因"}[draft.strength];
+  if(cat==="milk")return MILK_T[draft.milk];return draft.tops.size?`${draft.tops.size} 种`:"不加";
+}
+function paintTabs(){
+  const box=$("tabs");box.innerHTML="";
+  TAB_ORDER.forEach(cat=>{
+    const b=document.createElement("button");b.type="button";b.className="tab";b.setAttribute("role","tab");
+    b.setAttribute("aria-selected",cat===activeTab);
+    const changed=edits.some(e=>e.cat===cat);
+    b.innerHTML=`<em>${OPTS[cat].label}</em><small>${valText(cat)}</small>${changed?'<i class="dot" aria-hidden="true"></i>':""}`;
+    b.onclick=()=>{activeTab=cat;paintTabs();paintOpts();};box.appendChild(b);
+  });
+}
+function isOn(cat,v){return cat==="tops"?draft.tops.has(v):draft[cat]===v;}
+function paintOpts(){
+  const box=$("opts"),spec=OPTS[activeTab];box.innerHTML="";
+  box.setAttribute("role",spec.multi?"group":"radiogroup");
+  spec.items.forEach(it=>{
+    const b=document.createElement("button");b.type="button";b.className="opt";
+    b.setAttribute("role",spec.multi?"checkbox":"radio");b.setAttribute("aria-checked",isOn(activeTab,it.v));
+    let sub=it.mood;
+    const off=activeTab==="temp"&&it.v==="热"&&(draft.base==="orange"||draft.base==="cold");
+    if(off)sub="这杯只做冰的";
+    b.disabled=off;
+    b.innerHTML=`<i class="sw" style="background:${it.sw}"></i><div><b>${it.t}</b><span>${sub}</span></div><svg class="tick" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5 6 10l5-6"/></svg>`;
+    b.onclick=()=>choose(activeTab,it);box.appendChild(b);
+  });
+  if(spec.multi){const n=document.createElement("p");n.className="opt-note";n.textContent="可以多选，再点一次就拿掉";box.appendChild(n);}
+}
+function choose(cat,it){
+  if(cat==="tops"){draft.tops.has(it.v)?draft.tops.delete(it.v):draft.tops.add(it.v);}
+  else{ if(draft[cat]===it.v)return; draft[cat]=it.v; }
+  if(cat==="milk"&&it.v!=="none"&&draft.base==="orange"){draft.base="esp";draft.tops.delete("orange");}
+  if(["milk","strength","tops"].includes(cat)){draft.real=null;draft.key="custom";}
+  recordEdit(cat,it.v,it.mood);
+  tweenTo(draft);drawFinish(draft,true);
+  paintWhisper();paintLive();paintTabs();paintOpts();
+}
+function openEdit(){
+  draft=clone(model);baseDraft=clone(model);edits=[];swapped=false;activeTab="temp";
+  $("fillrect").setAttribute("y",TOP-12);$("fillrect").setAttribute("height",H+12);
+  show("edit");paintWhisper();paintLive();paintTabs();paintOpts();
+}
+$("tweak").onclick=openEdit;
+$("back").onclick=()=>{
+  draft=null;edits=[];swapped=false;tweenTo(model);drawFinish(model);show("result");
+};
+$("swap").onclick=()=>{
+  const n=Math.min(5,order.rank.length);
+  let key;do{rankIdx=(rankIdx+1)%n;key=order.rank[rankIdx];}while(key===draft.key&&n>1);
+  draft=modelFrom(key,order);baseDraft=clone(draft);edits=[];swapped=true;
+  tweenTo(draft,620);drawFinish(draft,true);paintWhisper();paintLive();paintTabs();paintOpts();
+};
+$("done").onclick=()=>{
+  if(!edits.length&&!swapped){$("back").onclick();return;}
+  model=clone(draft);show("result");serve();
+};
+
+$("save").onclick=async()=>{
+  const dl=await getDl();if(!dl||!window.html2canvas)return;
+  const b=$("save");b.disabled=true;$("toast").textContent="正在生成图片……";
+  try{
+    const c=await html2canvas($("receipt"),{scale:3,backgroundColor:null});
+    const blob=await new Promise(r=>c.toBlob(r,"image/png"));const d=order.time;
+    await dl.save({filename:`此刻咖啡馆-${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}.png`,data:blob});
+    $("toast").textContent="小票已保存。";
+  }catch(e){$("toast").textContent=e&&e.code==="cancelled"?"":"没能保存，可以直接截图这张小票。";}
+  finally{b.disabled=false;}
+};
+})();
+</script>
+</body>
+</html>

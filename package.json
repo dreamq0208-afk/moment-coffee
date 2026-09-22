@@ -1,0 +1,22 @@
+{
+  "name": "moment-cafe",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env server.mjs",
+    "build": "vite build",
+    "start": "node --env-file-if-exists=.env server.mjs --production",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
