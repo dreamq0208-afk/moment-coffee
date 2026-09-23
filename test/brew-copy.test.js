@@ -36,3 +36,18 @@ test('咖啡名最多五个汉字，超长、直白情绪词和旧记录分享�
   assert.deepEqual(extractBrewJson('{"name":"撑到下班的冰博克","note":"今天没白熬","barista":"坐下喝完再走"}', input),
     { name: '把夜喝浅', note: '今天没白熬', barista: '坐下喝完再走' });
 });
+
+test('咖啡名和咖啡师回复都明确结合电量、情绪和留言', () => {
+  const input = validateBrewRequest({ battery: 2, layers: [{ emotion: 'tired', portions: 2 }],
+    method: 'dirty', bean: 'tired', strength: '浓一点', message: '今天加班到十点' });
+  const prompt = buildBrewPrompt(input);
+  const name = prompt.split('name（咖啡名）：')[1].split('barista（')[0];
+  const barista = prompt.split('barista（')[1];
+  for (const section of [name, barista]) {
+    assert.match(section, /电量/);
+    assert.match(section, /情绪/);
+    assert.match(section, /留言/);
+  }
+  assert.match(prompt, /今天加班到十点/);
+  assert.match(prompt, /疲惫 2 份/);
+});

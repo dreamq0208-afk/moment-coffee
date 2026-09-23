@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
 <title>此刻咖啡馆</title>
 <link rel="stylesheet" href="/src/paper.css">
 </head>
@@ -68,12 +69,19 @@
 <section class="screen" id="s-wait" aria-label="等待页">
   <svg class="wait-cup" id="waitGlass" viewBox="0 0 220 280" role="img" aria-label="咖啡调配回放"></svg>
   <h1 class="wait-title hand">咖啡师在做了</h1>
-  <label for="msg" style="font-size:14px;margin:0 0 10px;display:block">趁这会儿，想跟咖啡师说点什么吗？</label>
-  <input class="field" id="msg" maxlength="30" placeholder="开了一下午的会，脑子嗡嗡的" autocomplete="off">
+  <label class="wait-label" for="msg">留一句此刻想说的话</label>
+  <p class="wait-guide" id="msgHelp">说说今天发生了什么，或者你想被怎样回应。咖啡师会参考这句话和你的心情、电量，为这杯起名，再回你一句。</p>
+  <input class="field" id="msg" maxlength="30" placeholder="写给此刻的自己（可不填）" autocomplete="off" aria-describedby="msgHelp">
   <p class="count muted"><span id="msgCount">0</span>/30</p>
+  <div class="wait-examples" aria-label="试着说一句">
+    <span class="muted">不知道说什么？试一句</span>
+    <button type="button" data-example="今天有点累，想慢一点">今天有点累</button>
+    <button type="button" data-example="有件小事，想和你分享">有件小事</button>
+    <button type="button" data-example="今天有点想念一个人">想念一个人</button>
+  </div>
   <div class="row" style="margin-top:auto">
-    <button class="btn" id="skipMsg">不说了，直接看</button>
-    <button class="btn solid" id="sendMsg">说好了</button>
+    <button class="btn" id="skipMsg">不写，直接看</button>
+    <button class="btn solid" id="sendMsg" disabled>把话交给咖啡师</button>
   </div>
 </section>
 
@@ -83,14 +91,36 @@
   <div class="stage" id="stage">
     <svg class="bar-line" viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true"><path class="ln" filter="url(#wob)" d="M-4 8Q100 10 200 7T404 8"/><path class="ln-thin" d="M-4 16Q120 17 240 15T404 16" opacity=".5"/></svg>
     <div class="stage-vessel" id="stageVessel"></div>
-    <div class="note" id="note"><svg class="tape" viewBox="0 0 62 20" aria-hidden="true"><path id="tapeFill" d="M2 3L60 1L59 18L1 19Z"/></svg><p class="hand" id="noteText"></p></div>
-    <span class="pa hand" id="pa" aria-hidden="true">啪</span>
     <div class="confetti" id="confetti"></div>
   </div>
-  <h1 class="cup-name hand" id="cupName"></h1>
-  <p class="cup-date muted latin" id="cupDate"></p>
+  <div class="reveal-flip" id="revealFlip" role="button" tabindex="0" aria-label="翻面，看看咖啡师写的话" aria-pressed="false">
+    <div class="flip-inner">
+      <div class="flip-face flip-front" aria-hidden="false">
+        <span class="flip-kicker latin">01 / YOUR RECIPE</span>
+        <h2 class="hand">这一杯，怎么来的</h2>
+        <dl class="flip-facts">
+          <div><dt>做法</dt><dd id="flipMethod"></dd></div>
+          <div><dt>豆子</dt><dd id="flipBean"></dd></div>
+          <div><dt>风味</dt><dd id="flipFlavor"></dd></div>
+          <div><dt>心情</dt><dd id="flipEmotions"></dd></div>
+          <div><dt>电量</dt><dd id="flipBattery"></dd></div>
+        </dl>
+      </div>
+      <div class="flip-face flip-back" aria-hidden="true">
+        <span class="flip-kicker latin">02 / FOR YOU</span>
+        <p class="flip-overline">这一杯，写给此刻的你</p>
+        <h1 class="cup-name hand pending" id="cupName">这一杯，正在落款…</h1>
+        <p class="cup-date muted latin" id="cupDate"></p>
+        <div class="barista-reply">
+          <span>咖啡师回你</span>
+          <p class="hand" id="baristaText">正在听你刚才说的话…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="flip-action" id="flipAction" type="button">点一下纸张，听听咖啡师怎么说 ↗</button>
   <p class="care" id="care" hidden>如果你正在经历很难熬的时刻，可以联系身边信任的人，或者当地的心理援助热线。</p>
-  <button class="link" id="howLink" style="align-self:flex-start;padding:0;margin-top:6px">这杯是怎么来的 ›</button>
+  <button class="link" id="howLink" style="align-self:flex-start;padding:0;margin-top:0">查看完整配方 ›</button>
   <div class="row" style="margin-top:auto;padding-top:16px">
     <button class="btn" id="again">再调一杯</button>
     <button class="btn solid" id="takeAway">带走这杯</button>

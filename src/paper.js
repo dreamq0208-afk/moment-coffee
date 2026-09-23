@@ -39,7 +39,6 @@ const BEAN={
 };
 const BAT_TXT=['快没电了','有点累','还行','挺有劲','满格'];
 const FB_NOTE={happy:'这份开心，分你一口也不少',excited:'先坐下，杯子会等你',calm:'今天不赶时间',miss:'这杯的甜，留给想起的人',tired:'今天也算没白熬',anxious:'这口先替你咽下去',regret:'这杯不用喝完，捧着就好',sad:'今天可以不用懂事'};
-const FB_BARISTA={combo:'一杯浓缩一杯奶咖，好心情就该分两口喝。',tonic:'汤力的气泡一直往上冒，你也先别急着停。',pourover:'水是一圈一圈慢慢绕进去的，今天也照这个速度。',siphon:'下壶的水烧热了会自己往上走，想念也差不多。',dirty:'冰牛奶上浮一层热浓缩，第一口最醒神。',icedrip:'冰滴一滴一滴落了一整夜，急不来，也不用急。',coldbrew:'冷萃泡了一整夜才不苦，今天的事也让它泡一泡。',phin:'滴滴壶慢得很，正好陪你坐一会儿。'};
 const HIDDEN_NOTES=['你是今天被偏爱的那一个','这杯没写在菜单上，只给你','今天的好运，先存在杯底'];
 const BANNED=['治愈','温暖','美好','元气','奔赴','热爱','生活','开心','兴奋','平静','想念','疲惫','焦虑','遗憾','悲伤','难过','伤心','快乐'];
 const CRISIS=['想死','不想活','自杀','轻生','结束生命','活不下去','伤害自己','割腕','去死'];
@@ -250,7 +249,7 @@ function renderStatus(){
   $('#bellHint').innerHTML=n?'摇铃，<br>交给咖啡师':'';
 }
 function refreshMix(){renderJars();renderTags();renderStatus()}
-function resetMix(){S.battery=3;S.layers=[];S.hist=[];S.msg='';S.cup=null;S.saved=false;$('#msg').value='';$('#msgCount').textContent='0';mixGlass.clear();mixGlass.set(glassList(),0);renderBattery();refreshMix()}
+function resetMix(){S.battery=3;S.layers=[];S.hist=[];S.msg='';S.cup=null;S.saved=false;$('#msg').value='';renderMessageUI();mixGlass.clear();mixGlass.set(glassList(),0);renderBattery();refreshMix()}
 async function addEmo(e,quiet){
   if(S.busy&&!quiet)return;
   const l=S.layers.find(x=>x.e===e);
@@ -272,7 +271,7 @@ async function ring(){
   const b=$('#bellSvg');b.classList.remove('shake');void b.getBoundingClientRect();b.classList.add('shake');
   playBell();
   $('#bellHint').innerHTML='叮——';
-  await wait(650);S.busy=false;ring.auto=false;show('s-wait');setTimeout(()=>$('#msg').focus({preventScroll:true}),400);
+  await wait(650);S.busy=false;ring.auto=false;show('s-wait');
 }
 async function randomCup(){
   resetMix();show('s-mix');S.busy=true;
@@ -296,7 +295,9 @@ async function startReplay(){
   }
 }
 function stopReplay(){replayOn=false}
-$('#msg').addEventListener('input',e=>$('#msgCount').textContent=e.target.value.length);
+function renderMessageUI(){const value=$('#msg').value.trim();$('#msgCount').textContent=[...$('#msg').value].length;$('#sendMsg').disabled=!value}
+$('#msg').addEventListener('input',renderMessageUI);
+document.querySelectorAll('[data-example]').forEach(b=>b.addEventListener('click',()=>{$('#msg').value=b.dataset.example;renderMessageUI();$('#msg').focus()}));
 $('#skipMsg').addEventListener('click',()=>{S.msg='';toReveal()});
 $('#sendMsg').addEventListener('click',()=>{S.msg=$('#msg').value.trim();toReveal()});
 $('#msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#sendMsg').click()}});
@@ -320,6 +321,13 @@ function buildCup(){
 const M=c=>METHOD[c.methodKey],Bn=c=>BEAN[c.bean];
 function fallbackName(c){return fallbackBrewName(c.main,c.crisis)}
 function fallbackNote(c){return c.hidden?HIDDEN_NOTES[Math.floor(Math.random()*HIDDEN_NOTES.length)]:FB_NOTE[c.main]}
+function fallbackBarista(c){
+  const feeling={happy:'这份高兴值得多留一会儿',excited:'先让这份雀跃慢慢落地',calm:'安静待一会儿也很好',miss:'想念谁，就给心里留个位置',tired:'累了就先歇一会儿',anxious:'紧绷的事先放在我这儿',regret:'没说完的事可以留到明天',sad:'难过时不用马上想通'}[c.main];
+  const energy=c.battery<=2?'电量不多':c.battery>=4?'今天还有力气':'照自己的节奏';
+  const first=c.msg.split(/[，。！？,!?]/)[0];
+  const heard=first?`你说「${[...first].slice(0,12).join('')}${[...first].length>12?'…':''}」，我听见了。`:'';
+  return `${heard}${energy}，${feeling}。`;
+}
 const clen=s=>[...String(s).replace(/[，。、！？,.!?\s…“”"'「」]/g,'')].length;
 function okNote(s){return typeof s==='string'&&clen(s)>=5&&clen(s)<=18&&!BANNED.some(w=>s.includes(w))}
 function okBarista(s){return typeof s==='string'&&clen(s)>=10&&clen(s)<=36}
@@ -339,37 +347,68 @@ async function generate(c){
   }catch(e){out={}}
   c.name=!c.crisis&&isValidBrewName(out.name)?out.name:fallbackName(c);
   c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):(okNote(out.note)?out.note.trim():fallbackNote(c));
-  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':okBarista(out.barista)?out.barista.trim():FB_BARISTA[c.method];
+  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':okBarista(out.barista)?out.barista.trim():fallbackBarista(c);
   return c;
 }
 
 /* ---------- reveal ---------- */
+let revealFlow=null;
+function finishRevealAfterFlip(){
+  const flow=revealFlow;
+  if(!flow||!flow.ready||!flow.flipAt||flow.scheduled)return;
+  flow.scheduled=true;
+  const delay=reduce?0:Math.max(0,750-(performance.now()-flow.flipAt));
+  setTimeout(()=>{
+    if(revealFlow!==flow||S.cup!==flow.cup)return;
+    $('#cupName').className='cup-name hand';$('#cupName').textContent=flow.cup.name;
+    $('#baristaText').textContent=flow.cup.barista;
+    $('#takeAway').disabled=false;$('#takeAway').textContent='带走这杯';
+  },delay);
+}
+function setFlipSide(back){
+  const card=$('#revealFlip');card.classList.toggle('is-flipped',back);card.setAttribute('aria-pressed',String(back));
+  card.setAttribute('aria-label',back?'翻回正面，查看这杯的配方':'翻面，看看咖啡师写的话');
+  card.querySelector('.flip-front').setAttribute('aria-hidden',String(back));
+  card.querySelector('.flip-back').setAttribute('aria-hidden',String(!back));
+  $('#flipAction').textContent=back?'翻回正面，再看一眼配方 ↶':'点一下纸张，听听咖啡师怎么说 ↗';
+}
+function flipCard(){
+  const back=!$('#revealFlip').classList.contains('is-flipped');setFlipSide(back);
+  if(back&&revealFlow&&!revealFlow.flipAt){revealFlow.flipAt=performance.now();finishRevealAfterFlip()}
+}
+$('#revealFlip').addEventListener('click',flipCard);
+$('#revealFlip').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flipCard()}});
+$('#flipAction').addEventListener('click',flipCard);
 async function toReveal(){
   const c=buildCup();S.cup=c;S.saved=false;
+  const flow={cup:c,ready:false,flipAt:0,scheduled:false};revealFlow=flow;
   document.fonts.load('400 32px "Long Cang Extra"','院').catch(()=>{});
   show('s-reveal');
-  const stage=$('#stage'),sv=$('#stageVessel'),note=$('#note'),nameEl=$('#cupName');
+  const sv=$('#stageVessel'),nameEl=$('#cupName');
   $('#s-reveal').classList.toggle('hidden',c.hidden);
   $('#hiddenFlag').classList.toggle('on',c.hidden);
-  $('#tapeFill').setAttribute('fill',c.hidden?'#E6C66A':Bn(c).t);
-  $('#tapeFill').setAttribute('stroke','#1C1B1A');$('#tapeFill').setAttribute('stroke-width','.8');
   $('#care').hidden=!c.crisis;
+  $('#flipMethod').textContent=`${M(c).n} · ${c.strength}`;
+  $('#flipBean').textContent=Bn(c).n;
+  $('#flipFlavor').textContent=Bn(c).f;
+  $('#flipEmotions').textContent=c.layers.filter(l=>l.e!=='base').map(l=>`${EMO[l.e].n} ×${l.p}`).join('、');
+  $('#flipBattery').textContent=`${c.battery}/5 · ${BAT_TXT[c.battery-1]}`;
   $('#cupDate').textContent=fmtDate(c.createdAt,true);
   nameEl.className='cup-name pending';nameEl.textContent='这一杯，正在落款…';
-  $('#noteText').innerHTML='<span class="writing">咖啡师在写纸条…</span>';
-  note.classList.remove('in');sv.classList.remove('in');$('#confetti').innerHTML='';
+  $('#baristaText').textContent=c.msg?'正在听你刚才说的话…':'正在读你放进杯里的心情…';
+  $('#takeAway').disabled=true;$('#takeAway').textContent='还在落款…';
+  $('#revealFlip').classList.remove('is-inviting');setFlipSide(false);
+  sv.classList.remove('in');$('#confetti').innerHTML='';
   sv.innerHTML=vesselSVG(c,{anim:true,label:`${M(c).n}`});
   const gen=generate(c);
   requestAnimationFrame(()=>requestAnimationFrame(()=>sv.classList.add('in')));
-  await wait(1500);
+  await wait(1300);
+  if(S.cup!==c)return;
+  $('#revealFlip').classList.add('is-inviting');
   if(c.hidden)confetti();
   await gen;
   if(S.cup!==c)return;
-  $('#noteText').textContent=c.note;
-  note.classList.add('in');
-  setTimeout(()=>{const p=$('#pa');p.classList.remove('go');void p.offsetWidth;p.classList.add('go')},380);
-  await wait(500);
-  nameEl.className='cup-name hand';nameEl.textContent=c.name;
+  flow.ready=true;finishRevealAfterFlip();
 }
 function confetti(){if(reduce)return;const box=$('#confetti');box.innerHTML=Array.from({length:22},(_,i)=>`<i style="left:${rnd(4,96)}%;background:${i%3?'#E6C66A':'#FBFBF9'};animation-delay:${rnd(0,.6).toFixed(2)}s;transform:rotate(${rnd(0,90)}deg)"></i>`).join('')}
 $('#again').addEventListener('click',()=>{resetMix();show('s-mix')});
@@ -565,8 +604,8 @@ function renderCabinet(focusMonth){
   if(!list.length){html+=`<p class="empty">这个月还没有收进来的杯子。<br>调一杯，放进来吧。</p>`;$('#shelfWrap').innerHTML=html;return}
   html+='<div class="shelf">';
   list.forEach((c,i)=>{
-    const memo=[...(c.note||'')].slice(0,8).join('');const rot=((i*37)%7-3);
-    html+=`<button class="slot" data-id="${esc(c.id)}" aria-label="${esc(c.name)}，${fmtDate(c.createdAt)}">
+    const noteChars=[...(c.note||'')],memo=noteChars.slice(0,5).join('')+(noteChars.length>5?'…':'');const rot=((i*37)%7-3);
+    html+=`<button class="slot" data-id="${esc(c.id)}" aria-label="${esc(c.name)}，${fmtDate(c.createdAt)}，${esc(c.note||'')}">
       ${c.id===justSaved?'<span class="flag">刚收进来</span>':''}${c.hidden?'<span class="gflag sticker" style="background:#D9B55A;width:18px;height:18px"><svg viewBox="0 0 18 18" width="12" height="12"><path d="M9 2Q10 8 16 9Q10 10 9 16Q8 10 2 9Q8 8 9 2Z" fill="#1C1B1A"/></svg></span>':''}
       ${vesselSVG(c)}<span class="memo" style="transform:rotate(${rot}deg)">${esc(memo)}</span><span class="d">${shortDate(c.createdAt).slice(3)}</span></button>`;
     if(i%3===2||i===list.length-1)html+=`<svg class="shelf-line" viewBox="0 0 300 14" preserveAspectRatio="none" aria-hidden="true"><path class="ln" filter="url(#wob)" d="M0 4Q80 6 150 3T300 5"/><path class="ln-thin" d="M6 4L10 13M294 4L290 13" opacity=".6"/></svg>`;
