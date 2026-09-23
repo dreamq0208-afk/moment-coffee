@@ -42,21 +42,17 @@ test('咖啡名和咖啡师回复都明确结合电量、情绪和留言', () =>
   const input = validateBrewRequest({ battery: 2, layers: [{ emotion: 'tired', portions: 2 }],
     method: 'dirty', bean: 'tired', strength: '浓一点', message: '今天加班到十点' });
   const prompt = buildBrewPrompt(input);
-  const name = prompt.split('name（咖啡名）：')[1].split('barista（')[0];
-  const barista = prompt.split('barista（')[1];
-  for (const section of [name, barista]) {
-    assert.match(section, /电量/);
-    assert.match(section, /情绪/);
-    assert.match(section, /留言/);
-  }
+  assert.match(prompt, /主情绪：疲惫 2 份；其余情绪：没有/);
+  assert.match(prompt, /留言优先提供真实处境，但主情绪决定怎么理解/);
+  assert.match(prompt, /电量低时收短、收轻/);
+  assert.match(prompt, /把主情绪和留言化成一个可感的动作或画面/);
   assert.match(prompt, /今天加班到十点/);
   assert.match(prompt, /疲惫 2 份/);
-  assert.match(barista, /20 个汉字以内/);
-  assert.match(barista, /最多一个中文逗号/);
-  assert.match(barista, /不复述原话/);
-  assert.match(barista, /用“你”称呼客人/);
-  assert.match(barista, /不要说产区、处理法、豆子名字/);
-  assert.match(prompt.split('note（夹在杯边的便签）：')[1].split('name（')[0], /不要复述留言/);
+  assert.match(prompt, /20 个汉字以内/);
+  assert.match(prompt, /最多一个中文逗号/);
+  assert.match(prompt, /不复述留言/);
+  assert.match(prompt, /用“你”称呼客人/);
+  assert.match(prompt, /不讲豆子产区和处理法/);
 });
 
 test('两句话遵守长度、标点、禁用词及不撞词', () => {

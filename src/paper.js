@@ -39,7 +39,7 @@ const BEAN={
   sad:{n:'哥伦比亚 · 朗姆桶陈',s:'朗姆桶',f:'朗姆酒、黑糖、葡萄干',g:'caramel',t:'#D9B38E'}
 };
 const BAT_TXT=['快没电了','有点累','还行','挺有劲','满格'];
-const FB_NOTE={happy:'好事有回声',excited:'日子正发亮',calm:'云替你翻页',miss:'回声有地址',tired:'月亮替你收尾',anxious:'空白也有重量',regret:'风替你收尾',sad:'月亮有背面'};
+const FB_NOTE={happy:'这件事值得',excited:'脚步已经先走',calm:'这一刻不用赶',miss:'门口那盏灯',tired:'今晚先熄一盏',anxious:'这一页还悬着',regret:'错过的留一格',sad:'空着的也算数'};
 const HIDDEN_NOTES=['这一格只留给你','今天轮到你了','悄悄藏一份'];
 const CRISIS=['想死','不想活','自杀','轻生','结束生命','活不下去','伤害自己','割腕','去死'];
 const INK='#1C1B1A';
@@ -328,14 +328,14 @@ function fallbackNote(c,barista=c.barista||''){
 }
 function fallbackBarista(c){
   const reply={
-    happy:'焦糖在杯底化开，你把晴天藏进袖口',
-    excited:'气泡沿杯壁上升，你把脚步交给晨光',
-    calm:'热水绕过粉层，你把今天留成空白',
-    miss:'水落回壶底，你把远山留在眼底',
-    tired:'热浓缩落在冰奶上，你的夜终于靠岸',
-    anxious:'冰滴落满一夜，你把时针放在桌上',
-    regret:'冷萃泡到天亮，你把昨夜留在杯底',
-    sad:'滴滴壶慢慢落下，你把雨声留在杯底',
+    happy:'焦糖在杯底化开，你的好事多留一会',
+    excited:'气泡沿杯壁上升，你的好消息藏不住',
+    calm:'热水绕过粉层，你坐着就很好',
+    miss:'水落回壶里，你惦记的还在那里',
+    tired:'热浓缩落在冰奶上，你撑到这口了',
+    anxious:'冰滴一滴滴落下，你先放过时针',
+    regret:'冷萃泡了一夜，你那句没出口的先放着',
+    sad:'炼乳压在杯底，你的沉默也有重量',
   }[c.main];
   return reply;
 }
