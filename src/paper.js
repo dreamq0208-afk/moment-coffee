@@ -512,7 +512,7 @@ $('#saveImg').addEventListener('click',async()=>{
     const canvas=await captureCard();
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
     if(!blob)throw new Error('image-export-failed');
-    const filename=`此刻咖啡馆-${S.cup.name.replace(/[\\/:*?"<>|]/g,'')}.png`;
+    const filename=`此刻咖啡馆-${shareName(S.cup).replace(/[\\/:*?"<>|]/g,'')}.png`;
     const file=new File([blob],filename,{type:'image/png'});
     if(/Android|iPhone|iPad|iPod/.test(navigator.userAgent)&&navigator.canShare?.({files:[file]})){
       try{await navigator.share({files:[file],title:'此刻咖啡馆'});return}catch(error){if(error.name==='AbortError')return}
