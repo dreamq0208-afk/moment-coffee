@@ -328,14 +328,14 @@ function fallbackNote(c,barista=c.barista||''){
 }
 function fallbackBarista(c){
   const reply={
-    happy:'焦糖落进杯里，甜味多待一会儿',
-    excited:'橙香冒了个头，心跳跟着气泡落地',
-    calm:'燕麦奶轻轻铺开，脚步也停一停',
-    miss:'桂花蜜留在杯底，路还记得来时',
-    tired:'热浓缩浮在冰奶上，第一口醒神',
-    anxious:'冰滴一滴滴落下，手边先空一会儿',
-    regret:'冷萃泡了一夜，今天的事先搁着',
-    sad:'黑咖啡沉在杯底，今夜就坐在这儿',
+    happy:'焦糖落进杯里，你把这点甜再尝一次',
+    excited:'气泡一直往上冒，你也往前走一步',
+    calm:'热水绕着粉层，你在这里坐一会儿',
+    miss:'水落回壶里，你惦记着也没关系',
+    tired:'热浓缩浮在冰奶上，你先醒这一口',
+    anxious:'冰滴一滴滴落下，你慢慢来',
+    regret:'冷萃泡了一整夜，你先不用处理',
+    sad:'炼乳垫在杯底，你先坐一会儿',
   }[c.main];
   return reply;
 }

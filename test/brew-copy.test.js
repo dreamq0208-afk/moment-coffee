@@ -52,15 +52,17 @@ test('咖啡名和咖啡师回复都明确结合电量、情绪和留言', () =>
   assert.match(prompt, /今天加班到十点/);
   assert.match(prompt, /疲惫 2 份/);
   assert.match(barista, /20 个汉字以内/);
-  assert.match(barista, /最多一个逗号/);
+  assert.match(barista, /最多一个中文逗号/);
   assert.match(barista, /不复述原话/);
-  assert.match(barista, /不编造这杯没有的配料或工序/);
+  assert.match(barista, /用“你”称呼客人/);
+  assert.match(barista, /不要说产区、处理法、豆子名字/);
   assert.match(prompt.split('note（夹在杯边的便签）：')[1].split('name（')[0], /不要复述留言/);
 });
 
 test('两句话遵守长度、标点、禁用词及不撞词', () => {
-  assert.equal(isValidBaristaReply('热浓缩浮在冰奶上，第一口醒神'), true);
-  assert.equal(isValidBaristaReply('冷萃泡了一夜，今天的事先搁着', '今天被老板骂了'), true);
+  assert.equal(isValidBaristaReply('热浓缩浮在冰奶上，你先醒这一口'), true);
+  assert.equal(isValidBaristaReply('冷萃泡了一夜，今天的事你先搁着', '今天被老板骂了'), true);
+  assert.equal(isValidBaristaReply('热浓缩浮在冰奶上，第一口醒神'), false);
   assert.equal(isValidBaristaReply('冰滴一滴滴落下，眼前的事也可以慢一点。'), false);
   assert.equal(isValidBaristaReply('冰滴一滴滴落下，眼前的事先放一放，肩膀也歇会儿'), false);
   assert.equal(isValidBaristaReply('冷萃泡了一夜，今天被老板骂了', '今天被老板骂了'), false);
