@@ -69,9 +69,8 @@
 <section class="screen" id="s-wait" aria-label="等待页">
   <svg class="wait-cup" id="waitGlass" viewBox="0 0 220 280" role="img" aria-label="咖啡调配回放"></svg>
   <h1 class="wait-title hand">咖啡师在做了</h1>
-  <label class="wait-label" for="msg">留一句此刻想说的话</label>
-  <p class="wait-guide" id="msgHelp">说说今天发生了什么，或者你想被怎样回应。咖啡师会参考这句话和你的心情、电量，为这杯起名，再回你一句。</p>
-  <input class="field" id="msg" maxlength="30" placeholder="写给此刻的自己（可不填）" autocomplete="off" aria-describedby="msgHelp">
+  <label class="wait-label" for="msg">描绘此刻</label>
+  <input class="field" id="msg" maxlength="30" placeholder="把此刻的心事，写进这杯里（可不填）" autocomplete="off">
   <p class="count muted"><span id="msgCount">0</span>/30</p>
   <div class="wait-examples" aria-label="试着说一句">
     <span class="muted">不知道说什么？试一句</span>
@@ -81,7 +80,7 @@
   </div>
   <div class="row" style="margin-top:auto">
     <button class="btn" id="skipMsg">不写，直接看</button>
-    <button class="btn solid" id="sendMsg" disabled>把话交给咖啡师</button>
+    <button class="btn solid" id="sendMsg" disabled>给专属咖啡师</button>
   </div>
 </section>
 
@@ -91,6 +90,7 @@
   <div class="stage" id="stage">
     <svg class="bar-line" viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true"><path class="ln" filter="url(#wob)" d="M-4 8Q100 10 200 7T404 8"/><path class="ln-thin" d="M-4 16Q120 17 240 15T404 16" opacity=".5"/></svg>
     <div class="stage-vessel" id="stageVessel"></div>
+    <div class="stage-note" id="stageNote"><span class="stage-tape" aria-hidden="true"></span><p class="hand" id="stageNoteText">这一页，先留白</p></div>
     <div class="confetti" id="confetti"></div>
   </div>
   <div class="reveal-flip" id="revealFlip" role="button" tabindex="0" aria-label="翻面，看看咖啡师写的话" aria-pressed="false">

@@ -384,7 +384,7 @@ async function toReveal(){
   const flow={cup:c,ready:false,flipAt:0,scheduled:false};revealFlow=flow;
   document.fonts.load('400 32px "Long Cang Extra"','院').catch(()=>{});
   show('s-reveal');
-  const sv=$('#stageVessel'),nameEl=$('#cupName');
+  const sv=$('#stageVessel'),stageNote=$('#stageNote'),nameEl=$('#cupName');
   $('#s-reveal').classList.toggle('hidden',c.hidden);
   $('#hiddenFlag').classList.toggle('on',c.hidden);
   $('#care').hidden=!c.crisis;
@@ -398,16 +398,18 @@ async function toReveal(){
   $('#baristaText').textContent=c.msg?'正在听你刚才说的话…':'正在读你放进杯里的心情…';
   $('#takeAway').disabled=true;$('#takeAway').textContent='还在落款…';
   $('#revealFlip').classList.remove('is-inviting');setFlipSide(false);
-  sv.classList.remove('in');$('#confetti').innerHTML='';
+  $('#stageNoteText').textContent='这一页，先留白';
+  sv.classList.remove('in');stageNote.classList.remove('in');$('#confetti').innerHTML='';
   sv.innerHTML=vesselSVG(c,{anim:true,label:`${M(c).n}`});
   const gen=generate(c);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>sv.classList.add('in')));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{sv.classList.add('in');stageNote.classList.add('in')}));
   await wait(1300);
   if(S.cup!==c)return;
   $('#revealFlip').classList.add('is-inviting');
   if(c.hidden)confetti();
   await gen;
   if(S.cup!==c)return;
+  $('#stageNoteText').textContent=c.note;
   flow.ready=true;finishRevealAfterFlip();
 }
 function confetti(){if(reduce)return;const box=$('#confetti');box.innerHTML=Array.from({length:22},(_,i)=>`<i style="left:${rnd(4,96)}%;background:${i%3?'#E6C66A':'#FBFBF9'};animation-delay:${rnd(0,.6).toFixed(2)}s;transform:rotate(${rnd(0,90)}deg)"></i>`).join('')}

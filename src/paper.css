@@ -86,7 +86,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .wait-cup{width:150px;height:190px;margin:18px auto 0;display:block}
 .wait-title{font-size:36px;margin:22px 0 6px}
 .wait-label{font-size:16px;font-weight:400;margin:0 0 5px}
-.wait-guide{font-size:13px;line-height:1.65;color:var(--ink-2);margin:0 0 13px}
+.wait-label{display:block}
 .field{width:100%;min-height:48px;border:1px solid var(--ink);border-radius:2px;background:transparent;color:var(--ink);font:300 15px var(--sans);padding:0 12px}
 .field::placeholder{color:var(--ink-2)}
 .count{font-family:var(--latin);font-size:12px;text-align:right;margin:6px 0 0}
@@ -103,6 +103,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .stage-vessel svg{width:100%;height:100%;display:block}
 .stage-vessel.in{transition:transform .9s cubic-bezier(.2,.8,.2,1);transform:none}
 .bar-line{position:absolute;left:0;right:0;bottom:6px;height:24px;width:100%}
+.stage-note{position:absolute;right:14px;bottom:43px;width:148px;min-height:126px;border:1px solid var(--ink);background:var(--note);padding:24px 11px 12px;transform:rotate(5deg) translateY(-24px);opacity:0;transition:transform .45s cubic-bezier(.2,.9,.3,1),opacity .25s}
+.stage-note.in{transform:rotate(5deg);opacity:1}
+.stage-note p{margin:0;font-size:19px;line-height:1.35;overflow-wrap:anywhere}
+.stage-tape{position:absolute;top:-9px;left:calc(50% - 30px);width:60px;height:18px;background:#E6D8C5;opacity:.85;transform:rotate(-4deg);clip-path:polygon(4% 12%,96% 0,100% 92%,0 100%)}
+.hidden .stage-note{background:var(--gold-paper)}
 .reveal-flip{height:282px;margin-top:10px;perspective:1000px;cursor:pointer;outline-offset:4px}
 .reveal-flip:focus-visible{outline:2px solid var(--ink)}
 .flip-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.75,.2,1)}
@@ -131,7 +136,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .confetti{position:absolute;inset:0;pointer-events:none}
 .confetti i{position:absolute;top:-20px;width:7px;height:12px;border:1px solid var(--ink);animation:fall 1.8s ease-in forwards}
 @keyframes fall{to{transform:translateY(340px) rotate(260deg);opacity:.2}}
-@media (prefers-reduced-motion:reduce){.stage-vessel.in,.flip-inner{transition:none}.reveal-flip.is-inviting:not(.is-flipped) .flip-inner{animation:none}}
+@media (prefers-reduced-motion:reduce){.stage-vessel.in,.stage-note,.flip-inner{transition:none}.reveal-flip.is-inviting:not(.is-flipped) .flip-inner{animation:none}}
 /* sheet */
 .scrim{position:fixed;inset:0;background:rgba(20,19,18,.35);display:none;z-index:60;align-items:flex-end;justify-content:center}
 .scrim.on{display:flex}
