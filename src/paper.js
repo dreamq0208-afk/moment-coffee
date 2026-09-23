@@ -1,7 +1,7 @@
 
 import html2canvas from 'html2canvas';
 import { fallbackBrewName, isValidBrewName, shareBrewName } from '../shared/brew-name.js';
-import { isValidBrewNote, isValidBaristaReply, sharesBrewWording } from '../shared/brew-copy.js';
+import { isValidBrewNote, isValidBaristaReply, sharesBrewWording, tidyBrewCopy } from '../shared/brew-copy.js';
 import { playIngredient, playBell, unlockSound } from './sound.js';
 (function(){
 "use strict";
@@ -39,7 +39,7 @@ const BEAN={
   sad:{n:'哥伦比亚 · 朗姆桶陈',s:'朗姆桶',f:'朗姆酒、黑糖、葡萄干',g:'caramel',t:'#D9B38E'}
 };
 const BAT_TXT=['快没电了','有点累','还行','挺有劲','满格'];
-const FB_NOTE={happy:'这事值得说说',excited:'趁现在出门',calm:'就这样待着',miss:'你有来处',tired:'撑到这会儿了',anxious:'肩膀放低点',regret:'留点力气',sad:'今天先不懂事'};
+const FB_NOTE={happy:'好事有回声',excited:'日子正发亮',calm:'云替你翻页',miss:'回声有地址',tired:'月亮替你收尾',anxious:'空白也有重量',regret:'风替你收尾',sad:'月亮有背面'};
 const HIDDEN_NOTES=['这一格只留给你','今天轮到你了','悄悄藏一份'];
 const CRISIS=['想死','不想活','自杀','轻生','结束生命','活不下去','伤害自己','割腕','去死'];
 const INK='#1C1B1A';
@@ -321,21 +321,21 @@ function buildCup(){
 const M=c=>METHOD[c.methodKey],Bn=c=>BEAN[c.bean];
 function fallbackName(c){return fallbackBrewName(c.main,c.crisis)}
 function fallbackNote(c,barista=c.barista||''){
-  const notes=c.hidden?HIDDEN_NOTES:[FB_NOTE[c.main],'在这里坐坐','这一刻归你'];
+  const notes=c.hidden?HIDDEN_NOTES:[FB_NOTE[c.main],'一页未写完','灯还亮着'];
   const start=c.hidden?Math.floor(Math.random()*notes.length):0;
   return Array.from({length:notes.length},(_,i)=>notes[(start+i)%notes.length])
     .find(note=>!sharesBrewWording(note,barista))||notes[start];
 }
 function fallbackBarista(c){
   const reply={
-    happy:'焦糖落进杯里，你把这点甜再尝一次',
-    excited:'气泡一直往上冒，你也往前走一步',
-    calm:'热水绕着粉层，你在这里坐一会儿',
-    miss:'水落回壶里，你惦记着也没关系',
-    tired:'热浓缩浮在冰奶上，你先醒这一口',
-    anxious:'冰滴一滴滴落下，你慢慢来',
-    regret:'冷萃泡了一整夜，你先不用处理',
-    sad:'炼乳垫在杯底，你先坐一会儿',
+    happy:'焦糖在杯底化开，你把晴天藏进袖口',
+    excited:'气泡沿杯壁上升，你把脚步交给晨光',
+    calm:'热水绕过粉层，你把今天留成空白',
+    miss:'水落回壶底，你把远山留在眼底',
+    tired:'热浓缩落在冰奶上，你的夜终于靠岸',
+    anxious:'冰滴落满一夜，你把时针放在桌上',
+    regret:'冷萃泡到天亮，你把昨夜留在杯底',
+    sad:'滴滴壶慢慢落下，你把雨声留在杯底',
   }[c.main];
   return reply;
 }
@@ -353,9 +353,11 @@ async function generate(c){
       if(response.ok)out=await response.json();
     }finally{clearTimeout(timer)}
   }catch(e){out={}}
+  const generatedBarista=tidyBrewCopy(out.barista);
+  const generatedNote=tidyBrewCopy(out.note);
   c.name=!c.crisis&&isValidBrewName(out.name)?out.name:fallbackName(c);
-  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':isValidBaristaReply(out.barista,c.msg)?out.barista.trim():fallbackBarista(c);
-  c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):isValidBrewNote(out.note,c.msg)&&!sharesBrewWording(out.note,c.barista)?out.note.trim():fallbackNote(c);
+  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':isValidBaristaReply(generatedBarista,c.msg)?generatedBarista:fallbackBarista(c);
+  c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):isValidBrewNote(generatedNote,c.msg)&&!sharesBrewWording(generatedNote,c.barista)?generatedNote:fallbackNote(c);
   return c;
 }
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildBrewPrompt, extractBrewJson, validateBrewRequest,
-  isValidBrewNote, isValidBaristaReply, sharesBrewWording } from '../shared/brew-copy.js';
+  isValidBrewNote, isValidBaristaReply, sharesBrewWording, tidyBrewCopy } from '../shared/brew-copy.js';
 import { fallbackBrewName, isValidBrewName, shareBrewName } from '../shared/brew-name.js';
 
 test('纸上线稿文案请求按份数与加入顺序核对做法和豆子', () => {
@@ -60,6 +60,9 @@ test('咖啡名和咖啡师回复都明确结合电量、情绪和留言', () =>
 });
 
 test('两句话遵守长度、标点、禁用词及不撞词', () => {
+  assert.equal(tidyBrewCopy('「热水绕过粉层，你把今天留成空白。」'), '热水绕过粉层，你把今天留成空白');
+  assert.equal(isValidBaristaReply(tidyBrewCopy('「热水绕过粉层，你把今天留成空白。」')), true);
+  assert.equal(isValidBrewNote(tidyBrewCopy('云替你翻页。')), true);
   assert.equal(isValidBaristaReply('热浓缩浮在冰奶上，你先醒这一口'), true);
   assert.equal(isValidBaristaReply('冷萃泡了一夜，今天的事你先搁着', '今天被老板骂了'), true);
   assert.equal(isValidBaristaReply('热浓缩浮在冰奶上，第一口醒神'), false);
