@@ -85,8 +85,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 /* wait */
 .wait-cup{width:150px;height:190px;margin:18px auto 0;display:block}
 .wait-title{font-size:36px;margin:22px 0 6px}
-.wait-label{font-size:16px;font-weight:400;margin:0 0 5px}
-.wait-label{display:block}
 .field{width:100%;min-height:48px;border:1px solid var(--ink);border-radius:2px;background:transparent;color:var(--ink);font:300 15px var(--sans);padding:0 12px}
 .field::placeholder{color:var(--ink-2)}
 .count{font-family:var(--latin);font-size:12px;text-align:right;margin:6px 0 0}
@@ -108,46 +106,40 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .stage-note p{margin:0;font-size:19px;line-height:1.35;overflow-wrap:anywhere}
 .stage-tape{position:absolute;top:-9px;left:calc(50% - 30px);width:60px;height:18px;background:#E6D8C5;opacity:.85;transform:rotate(-4deg);clip-path:polygon(4% 12%,96% 0,100% 92%,0 100%)}
 .hidden .stage-note{background:var(--gold-paper)}
-.reveal-flip{height:282px;margin-top:10px;perspective:1000px;cursor:pointer;outline-offset:4px}
-.reveal-flip:focus-visible{outline:2px solid var(--ink)}
-.flip-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.75,.2,1)}
-.reveal-flip.is-flipped .flip-inner{transform:rotateY(180deg)}
-.reveal-flip.is-inviting:not(.is-flipped) .flip-inner{animation:inviteFlip .9s ease-in-out 1}
-@keyframes inviteFlip{35%{transform:rotateY(-9deg)}75%{transform:rotateY(3deg)}}
-.flip-face{position:absolute;inset:0;border:1px solid var(--ink);background:var(--note);padding:18px 20px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
-.hidden .flip-face{background:var(--gold-paper)}
-.flip-back{transform:rotateY(180deg);display:flex;flex-direction:column}
-.flip-kicker{font-size:10px;letter-spacing:1.5px;color:var(--ink-2)}
-.flip-front h2{font-size:25px;font-weight:400;margin:5px 0 12px}
-.flip-facts{display:grid;gap:5px;margin:0;font-size:13px;line-height:1.4}
-.flip-facts div{display:grid;grid-template-columns:3.4em minmax(0,1fr);gap:9px;border-top:1px solid var(--line-soft);padding-top:5px}
-.flip-facts dt{color:var(--ink-2)}
-.flip-facts dd{margin:0;font-weight:400;overflow-wrap:anywhere}
-.flip-overline{font-size:13px;color:var(--ink-2);margin:9px 0 0}
-.cup-name{font-size:35px;line-height:1.15;margin:9px 0 4px;min-height:40px}
-.cup-name.pending{font-family:var(--sans);font-size:14px;color:var(--ink-2);display:flex;align-items:center;min-height:40px}
+.reveal-name-row{display:flex;align-items:center;gap:8px;margin-top:12px}
+.cup-name{font-size:32px;line-height:1.15;margin:0;min-height:42px;display:flex;align-items:center}
+.cup-name.pending{font-family:var(--sans);font-size:14px;color:var(--ink-2)}
 .cup-date{font-size:13px;margin:0}
-.barista-reply{border-top:1px solid var(--line-soft);margin-top:auto;padding-top:11px}
-.barista-reply span{font-size:12px;color:var(--ink-2)}
-.barista-reply p{font-size:20px;line-height:1.35;margin:5px 0 0;overflow-wrap:anywhere}
-.flip-action{align-self:center;min-height:44px;border:0;background:none;color:var(--ink);font-size:13px;text-decoration:underline;text-underline-offset:5px;padding:0 8px}
+.bean-trigger{width:42px;height:42px;flex:none;border:0;background:transparent;padding:2px;cursor:pointer;color:var(--ink)}
+.bean-trigger svg{width:100%;height:100%;fill:#D7AA78;stroke:currentColor;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round}
+.bean-trigger.is-inviting svg{animation:beanInvite 2.8s ease-in-out infinite;transform-origin:center}
+@keyframes beanInvite{0%,72%,100%{transform:translateY(0) rotate(-14deg)}80%{transform:translateY(-5px) rotate(3deg)}89%{transform:translateY(0) rotate(-8deg)}}
+.recipe-overlay{position:fixed;inset:0;z-index:55;display:flex;align-items:center;justify-content:center;padding:24px}
+.recipe-overlay[hidden]{display:none}
+.recipe-backdrop{position:absolute;inset:0;background:rgba(28,27,26,.42)}
+.story-card{position:relative;width:min(330px,100%);max-height:calc(100dvh - 80px);overflow:auto;background:var(--note);border:1px solid var(--ink);box-shadow:0 18px 45px rgba(28,27,26,.17);padding:26px 24px 18px;cursor:pointer;animation:storyAppear .35s ease-out}
+.story-card:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+.recipe-overlay.hidden-cup .story-card{background:var(--gold-paper)}
+@keyframes storyAppear{from{opacity:0;transform:translateY(18px) rotate(-2deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+.story-words{font-size:23px;line-height:1.4;margin:0 0 24px;min-height:64px;overflow-wrap:anywhere}
+.story-rule{height:1px;background:var(--line-soft);position:relative;margin-bottom:17px}
+.story-rule span{position:absolute;left:0;top:-2px;width:28px;height:5px;background:#D7AA78}
+.story-facts{display:grid;gap:11px;margin:0;font-size:13px;line-height:1.5}
+.story-facts div{display:grid;grid-template-columns:3.5em minmax(0,1fr);gap:8px}
+.story-facts dt{color:var(--ink-2)}
+.story-facts dd{margin:0;overflow-wrap:anywhere}
+.story-close{font-size:11px;color:var(--ink-2);text-align:center;margin:24px 0 0}
 #takeAway:disabled{opacity:.45;cursor:default}
 .care{font-size:12px;line-height:1.7;margin:10px 0 0;padding:8px 10px;border:1px dashed var(--ink-2)}
 .confetti{position:absolute;inset:0;pointer-events:none}
 .confetti i{position:absolute;top:-20px;width:7px;height:12px;border:1px solid var(--ink);animation:fall 1.8s ease-in forwards}
 @keyframes fall{to{transform:translateY(340px) rotate(260deg);opacity:.2}}
-@media (prefers-reduced-motion:reduce){.stage-vessel.in,.stage-note,.flip-inner{transition:none}.reveal-flip.is-inviting:not(.is-flipped) .flip-inner{animation:none}}
+@media (prefers-reduced-motion:reduce){.stage-vessel.in,.stage-note{transition:none}.bean-trigger.is-inviting svg,.story-card{animation:none}}
 /* sheet */
 .scrim{position:fixed;inset:0;background:rgba(20,19,18,.35);display:none;z-index:60;align-items:flex-end;justify-content:center}
 .scrim.on{display:flex}
 .sheet{width:100%;max-width:430px;max-height:86%;overflow:auto;background:var(--paper);border-top:1px solid var(--ink);padding:10px 22px calc(24px + env(safe-area-inset-bottom,0px))}
 .sheet h2{font-weight:400;font-size:16px;margin:0}
-.recipe{display:flex;flex-direction:column-reverse;border:1px solid var(--ink);margin:10px 0 14px}
-.recipe div{display:flex;align-items:center;gap:10px;padding:0 10px;font-size:13px;border-top:1px solid var(--line-soft)}
-.recipe .sw{width:14px;height:14px;border:1px solid var(--ink);flex:none}
-.facts{display:grid;grid-template-columns:4.5em 1fr;gap:8px 12px;font-size:14px;margin:0 0 14px}
-.facts dt{color:var(--ink-2)}
-.facts dd{margin:0;font-weight:400}
 /* share */
 .tabs{display:flex;border-bottom:1px solid var(--line-soft);margin:4px 0 16px}
 .tabs button{flex:1;min-height:44px;background:none;border:0;border-bottom:2px solid transparent;font-size:14px;color:var(--ink-2);margin-bottom:-1px}

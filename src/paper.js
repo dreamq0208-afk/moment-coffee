@@ -352,52 +352,40 @@ async function generate(c){
 }
 
 /* ---------- reveal ---------- */
-let revealFlow=null;
-function finishRevealAfterFlip(){
-  const flow=revealFlow;
-  if(!flow||!flow.ready||!flow.flipAt||flow.scheduled)return;
-  flow.scheduled=true;
-  const delay=reduce?0:Math.max(0,750-(performance.now()-flow.flipAt));
-  setTimeout(()=>{
-    if(revealFlow!==flow||S.cup!==flow.cup)return;
-    $('#cupName').className='cup-name hand';$('#cupName').textContent=flow.cup.name;
-    $('#baristaText').textContent=flow.cup.barista;
-    $('#takeAway').disabled=false;$('#takeAway').textContent='带走这杯';
-  },delay);
+function openStory(){
+  $('#recipeOverlay').hidden=false;
+  $('#storyCard').focus();
 }
-function setFlipSide(back){
-  const card=$('#revealFlip');card.classList.toggle('is-flipped',back);card.setAttribute('aria-pressed',String(back));
-  card.setAttribute('aria-label',back?'翻回正面，查看这杯的配方':'翻面，看看咖啡师写的话');
-  card.querySelector('.flip-front').setAttribute('aria-hidden',String(back));
-  card.querySelector('.flip-back').setAttribute('aria-hidden',String(!back));
-  $('#flipAction').textContent=back?'翻回正面，再看一眼配方 ↶':'点一下纸张，听听咖啡师怎么说 ↗';
+function closeStory(){
+  if($('#recipeOverlay').hidden)return;
+  $('#recipeOverlay').hidden=true;
+  $('#beanTrigger').focus();
 }
-function flipCard(){
-  const back=!$('#revealFlip').classList.contains('is-flipped');setFlipSide(back);
-  if(back&&revealFlow&&!revealFlow.flipAt){revealFlow.flipAt=performance.now();finishRevealAfterFlip()}
-}
-$('#revealFlip').addEventListener('click',flipCard);
-$('#revealFlip').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flipCard()}});
-$('#flipAction').addEventListener('click',flipCard);
+$('#beanTrigger').addEventListener('click',openStory);
+$('#storyCard').addEventListener('click',closeStory);
+$('#storyCard').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();closeStory()}});
+$('#recipeBackdrop').addEventListener('click',closeStory);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#recipeOverlay').hidden)closeStory()});
 async function toReveal(){
   const c=buildCup();S.cup=c;S.saved=false;
-  const flow={cup:c,ready:false,flipAt:0,scheduled:false};revealFlow=flow;
   document.fonts.load('400 32px "Long Cang Extra"','院').catch(()=>{});
   show('s-reveal');
   const sv=$('#stageVessel'),stageNote=$('#stageNote'),nameEl=$('#cupName');
   $('#s-reveal').classList.toggle('hidden',c.hidden);
   $('#hiddenFlag').classList.toggle('on',c.hidden);
   $('#care').hidden=!c.crisis;
-  $('#flipMethod').textContent=`${M(c).n} · ${c.strength}`;
-  $('#flipBean').textContent=Bn(c).n;
-  $('#flipFlavor').textContent=Bn(c).f;
-  $('#flipEmotions').textContent=c.layers.filter(l=>l.e!=='base').map(l=>`${EMO[l.e].n} ×${l.p}`).join('、');
-  $('#flipBattery').textContent=`${c.battery}/5 · ${BAT_TXT[c.battery-1]}`;
+  $('#recipeOverlay').hidden=true;
+  $('#recipeOverlay').classList.toggle('hidden-cup',c.hidden);
+  $('#storyMethod').textContent=`${M(c).n} · ${c.strength}`;
+  $('#storyBean').textContent=Bn(c).n;
+  $('#storyFlavor').textContent=Bn(c).f;
+  $('#storyEmotions').textContent=c.layers.filter(l=>l.e!=='base').map(l=>`${EMO[l.e].n} ×${l.p}`).join('、');
+  $('#storyBattery').textContent=`${c.battery}/5 · ${BAT_TXT[c.battery-1]}`;
+  $('#storyWords').textContent=c.msg?'你的话，正在被听见…':'这杯的话，还在路上…';
   $('#cupDate').textContent=fmtDate(c.createdAt,true);
   nameEl.className='cup-name pending';nameEl.textContent='这一杯，正在落款…';
-  $('#baristaText').textContent=c.msg?'正在听你刚才说的话…':'正在读你放进杯里的心情…';
+  $('#beanTrigger').classList.remove('is-inviting');
   $('#takeAway').disabled=true;$('#takeAway').textContent='还在落款…';
-  $('#revealFlip').classList.remove('is-inviting');setFlipSide(false);
   $('#stageNoteText').textContent='这一页，先留白';
   sv.classList.remove('in');stageNote.classList.remove('in');$('#confetti').innerHTML='';
   sv.innerHTML=vesselSVG(c,{anim:true,label:`${M(c).n}`});
@@ -405,17 +393,20 @@ async function toReveal(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{sv.classList.add('in');stageNote.classList.add('in')}));
   await wait(1300);
   if(S.cup!==c)return;
-  $('#revealFlip').classList.add('is-inviting');
   if(c.hidden)confetti();
   await gen;
   if(S.cup!==c)return;
   $('#stageNoteText').textContent=c.note;
-  flow.ready=true;finishRevealAfterFlip();
+  $('#storyWords').textContent=c.barista;
+  await wait(reduce?0:500);
+  if(S.cup!==c)return;
+  nameEl.className='cup-name hand';nameEl.textContent=c.name;
+  $('#beanTrigger').classList.add('is-inviting');
+  $('#takeAway').disabled=false;$('#takeAway').textContent='带走这杯';
 }
 function confetti(){if(reduce)return;const box=$('#confetti');box.innerHTML=Array.from({length:22},(_,i)=>`<i style="left:${rnd(4,96)}%;background:${i%3?'#E6C66A':'#FBFBF9'};animation-delay:${rnd(0,.6).toFixed(2)}s;transform:rotate(${rnd(0,90)}deg)"></i>`).join('')}
 $('#again').addEventListener('click',()=>{resetMix();show('s-mix')});
 $('#takeAway').addEventListener('click',()=>{renderCard();show('s-share')});
-$('#howLink').addEventListener('click',()=>openHow(S.cup));
 
 /* ---------- sheet ---------- */
 let lastFocus=null;
@@ -424,23 +415,6 @@ function closeSheet(){$('#scrim').classList.remove('on');lastFocus&&lastFocus.fo
 $('#scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeSheet()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#scrim').classList.contains('on'))closeSheet()});
 const closeBtn=`<button class="iconbtn" data-close aria-label="关闭" style="margin-right:-12px"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M6 6L18 18M18 6L6 18"/></svg></button>`;
-function openHow(c){
-  if(!c)return;
-  const rows=c.layers.map(l=>{const nm=l.e==='base'?`浓缩 ${c.shots===2?'双份':'单份'}`:`${EMO[l.e].n} · ${EMO[l.e].ing}`;const h=Math.max(30,l.p*16);return `<div style="min-height:${h}px"><span class="sw" style="background:${l.c}"></span>${nm}<span class="muted latin" style="margin-left:auto">${l.e==='base'?'':'×'+l.p}</span></div>`}).join('');
-  openSheet(`<div class="topbar"><h2 id="sheetTitle">这杯是怎么来的</h2>${closeBtn}</div>
-    <div style="display:flex;gap:14px;align-items:flex-end">
-      <div style="width:120px;flex:none">${vesselSVG(c,{w:120})}</div>
-      <div class="recipe" style="flex:1">${rows}</div>
-    </div>
-    <dl class="facts">
-      <dt>做法</dt><dd>${esc(M(c).n)} · ${c.strength}</dd>
-      <dt>豆子</dt><dd>${esc(Bn(c).n)}</dd>
-      <dt>风味</dt><dd>${esc(Bn(c).f)}</dd>
-    </dl>
-    <p class="muted" style="font-size:12px;margin:0 0 4px">咖啡师说</p>
-    <p class="hand" style="font-size:22px;line-height:1.45;margin:0">${esc(c.barista)}</p>`);
-}
-
 /* ---------- share cards ---------- */
 function hiddenBadge(c){return c.hidden?`<span class="hidden-badge"><span class="sticker" style="background:#D9B55A;width:18px;height:18px"><svg viewBox="0 0 18 18" width="12" height="12"><path d="M9 2Q10 8 16 9Q10 10 9 16Q8 10 2 9Q8 8 9 2Z" fill="#1C1B1A"/></svg></span>隐藏款</span>`:''}
 function ingredients(c){return c.layers.map(l=>l.e==='base'?`浓缩 ${c.shots===2?'双份':'单份'}`:`${EMO[l.e].ing}${l.p>1?' ×'+l.p:''}`)}
