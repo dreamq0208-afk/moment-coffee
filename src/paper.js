@@ -1,5 +1,6 @@
 
 import html2canvas from 'html2canvas';
+import { fallbackBrewName, isValidBrewName, shareBrewName } from '../shared/brew-name.js';
 (function(){
 "use strict";
 /* ---------- data ---------- */
@@ -35,7 +36,6 @@ const BEAN={
   regret:{n:'肯尼亚 AA · 水洗',s:'肯尼亚',f:'黑醋栗、西柚',g:'grapefruit',t:'#F1B4A2'},
   sad:{n:'哥伦比亚 · 朗姆桶陈',s:'朗姆桶',f:'朗姆酒、黑糖、葡萄干',g:'caramel',t:'#D9B38E'}
 };
-const ADJ={happy:['有点小开心的','开心到冒泡的'],excited:['坐不住的','想蹦起来的'],calm:['慢慢来的','安安静静的'],miss:['有点想你的','很想很想的'],tired:['撑到现在的','快要睡着的'],anxious:['先别慌的','心里打鼓的'],regret:['没说出口的','还在想那件事的'],sad:['需要抱抱的','想哭一会儿的']};
 const BAT_TXT=['快没电了','有点累','还行','挺有劲','满格'];
 const FB_NOTE={happy:'这份开心，分你一口也不少',excited:'先坐下，杯子会等你',calm:'今天不赶时间',miss:'这杯的甜，留给想起的人',tired:'今天也算没白熬',anxious:'这口先替你咽下去',regret:'这杯不用喝完，捧着就好',sad:'今天可以不用懂事'};
 const FB_BARISTA={combo:'一杯浓缩一杯奶咖，好心情就该分两口喝。',tonic:'汤力的气泡一直往上冒，你也先别急着停。',pourover:'水是一圈一圈慢慢绕进去的，今天也照这个速度。',siphon:'下壶的水烧热了会自己往上走，想念也差不多。',dirty:'冰牛奶上浮一层热浓缩，第一口最醒神。',icedrip:'冰滴一滴一滴落了一整夜，急不来，也不用急。',coldbrew:'冷萃泡了一整夜才不苦，今天的事也让它泡一泡。',phin:'滴滴壶慢得很，正好陪你坐一会儿。'};
@@ -317,11 +317,10 @@ function buildCup(){
     name:'',note:'',barista:'',crisis};
 }
 const M=c=>METHOD[c.methodKey],Bn=c=>BEAN[c.bean];
-function fallbackName(c){const l=c.layers.find(x=>x.e===c.main);return ADJ[c.main][l.p>=3?1:0]+Bn(c).s+M(c).s}
+function fallbackName(c){return fallbackBrewName(c.main,c.crisis)}
 function fallbackNote(c){return c.hidden?HIDDEN_NOTES[Math.floor(Math.random()*HIDDEN_NOTES.length)]:FB_NOTE[c.main]}
 const clen=s=>[...String(s).replace(/[，。、！？,.!?\s…“”"'「」]/g,'')].length;
 function okNote(s){return typeof s==='string'&&clen(s)>=5&&clen(s)<=18&&!BANNED.some(w=>s.includes(w))}
-function okName(s){return typeof s==='string'&&clen(s)>=4&&clen(s)<=14}
 function okBarista(s){return typeof s==='string'&&clen(s)>=10&&clen(s)<=36}
 
 async function generate(c){
@@ -336,7 +335,8 @@ async function generate(c){
       }),signal:controller.signal});
       if(response.ok)out=await response.json();
     }finally{clearTimeout(timer)}
-  }catch(e){out={}}  c.name=okName(out.name)?out.name.trim():fallbackName(c);
+  }catch(e){out={}}
+  c.name=!c.crisis&&isValidBrewName(out.name)?out.name:fallbackName(c);
   c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):(okNote(out.note)?out.note.trim():fallbackNote(c));
   c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':okBarista(out.barista)?out.barista.trim():FB_BARISTA[c.method];
   return c;
@@ -403,7 +403,7 @@ function hiddenBadge(c){return c.hidden?`<span class="hidden-badge"><span class=
 function ingredients(c){return c.layers.map(l=>l.e==='base'?`浓缩 ${c.shots===2?'双份':'单份'}`:`${EMO[l.e].ing}${l.p>1?' ×'+l.p:''}`)}
 function splitHalf(s){const a=[...s];const m=Math.ceil(a.length/2);return[a.slice(0,m).join(''),a.slice(m).join('')]}
 const SHARE_EMOTIONS=/开心|兴奋|平静|想念|疲惫|焦虑|遗憾|悲伤|难过|伤心|快乐/;
-function shareName(c){const name=c.name||fallbackName(c);return SHARE_EMOTIONS.test(name)?`此刻的${Bn(c).s}${M(c).s}`:name}
+function shareName(c){return shareBrewName(c.name,c.main,c.crisis)}
 function shareNote(c){const note=c.note||fallbackNote(c);return SHARE_EMOTIONS.test(note)?'今天也算没白熬':note}
 function cardHTML(c,style){
   const date=shortDate(c.createdAt),name=esc(shareName(c)),note=esc(shareNote(c));

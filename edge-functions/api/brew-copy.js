@@ -30,7 +30,7 @@ export async function onRequestPost(context) {
     });
     if (!upstream.ok) return json({ error: 'ai-upstream-error' }, 502);
     const payload = await upstream.json();
-    return json(extractBrewJson(payload.choices?.[0]?.message?.content || ''));
+    return json(extractBrewJson(payload.choices?.[0]?.message?.content || '', input));
   } catch (error) {
     return json({ error: error?.name === 'AbortError' ? 'ai-timeout' : 'ai-unavailable' }, error?.name === 'AbortError' ? 504 : 502);
   } finally { clearTimeout(timeout); }

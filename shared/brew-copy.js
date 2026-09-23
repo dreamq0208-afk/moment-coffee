@@ -1,3 +1,5 @@
+import { fallbackBrewName, isValidBrewName } from './brew-name.js';
+
 const emotions = {
   happy: ['开心', '焦糖'], excited: ['兴奋', '橙汁'], calm: ['平静', '燕麦奶'],
   miss: ['想念', '桂花蜜'], tired: ['疲惫', '冷萃'], anxious: ['焦虑', '海盐奶盖'],
@@ -57,16 +59,19 @@ export function buildBrewPrompt(input) {
 
 note（纸条上的话，最重要）：8 到 16 个字。是送给客人的一份小礼物，不是复述情绪。接住此刻，但往前看半步，或者带一点自嘲。不要出现任何情绪词本身（开心、兴奋、平静、想念、疲惫、焦虑、遗憾、悲伤，以及难过、快乐这类近义词）。禁用：治愈、温暖、美好、元气、奔赴、热爱、生活。参考语气：今天也算没白熬 / 这口先替你咽下去 / 允许你今天慢半拍 / 这杯不用喝完，捧着就好。
 
-name（咖啡名）：6 到 12 个字。像一句心里话、一个画面或一个反差。情绪要具体。结尾带上做法或一个风味词。有留言就从留言里找画面，但不要照抄。参考：咽下去的那句冷萃 / 撑到下班的冰博克 / 离家八百里的红糖虹吸 / 偷偷开心两杯份。
+name（咖啡名）：只写 2 到 5 个汉字，不加标点、空格、英文或数字。像一首短诗的题目：有画面、有留白，轻微的反差或俏皮，让客人愿意晒出来。先接住当下的情绪，再把它拐向半步希望；别硬灌鸡汤，也别把难过写成绝望。优先从留言里提炼具体意象，但不要照抄留言。不要直接写“开心、焦虑、疲惫”等情绪词，不用“治愈、加油、岁月静好”这类套话。不必带咖啡、豆子或做法名称。参考气质：把夜喝浅 / 等风回信 / 迟到的雨 / 风先起飞。这些只是风格参考，每次根据客人写新的名字，不要照搬。
 
 barista（咖啡师的话）：18 到 30 个字。留言优先，其次情绪，咖啡的味道只是材料。不讲咖啡知识，不提产地和处理法。负面情绪只接住，不劝解，不说教。参考：冷萃泡了一整夜才不苦，今天的事也让它泡一泡。
 
 如果留言里透露出想伤害自己的念头，三段都要轻一点、认真一点，不开玩笑，不说教。`;
 }
 
-export function extractBrewJson(payload) {
+export function extractBrewJson(payload, input) {
   const match = String(payload).match(/\{[\s\S]*\}/);
   if (!match) throw new Error('invalid-ai-json');
   const result = JSON.parse(match[0]);
-  return { name: result.name, note: result.note, barista: result.barista };
+  const ranked = input.layers.map((layer, index) => ({ ...layer, index }))
+    .sort((a, b) => b.portions - a.portions || a.index - b.index);
+  return { name: !input.crisis && isValidBrewName(result.name) ? result.name : fallbackBrewName(ranked[0].emotion, input.crisis),
+    note: result.note, barista: result.barista };
 }

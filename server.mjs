@@ -37,7 +37,7 @@ app.post('/api/brew-copy', async (request, response) => {
     });
     if (!upstream.ok) return response.status(502).json({ error: 'ai-upstream-error' });
     const payload = await upstream.json();
-    response.json(extractBrewJson(payload.choices?.[0]?.message?.content || ''));
+    response.json(extractBrewJson(payload.choices?.[0]?.message?.content || '', input));
   } catch (error) {
     response.status(error?.name === 'AbortError' ? 504 : 502).json({ error: error?.name === 'AbortError' ? 'ai-timeout' : 'ai-unavailable' });
   } finally { clearTimeout(timeout); }

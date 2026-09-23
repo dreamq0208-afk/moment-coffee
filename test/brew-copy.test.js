@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildBrewPrompt, extractBrewJson, validateBrewRequest } from '../shared/brew-copy.js';
+import { fallbackBrewName, isValidBrewName, shareBrewName } from '../shared/brew-name.js';
 
 test('纸上线稿文案请求按份数与加入顺序核对做法和豆子', () => {
   const request = { battery: 2, layers: [
@@ -18,6 +19,20 @@ test('留言截断并标记危机，模型输出只保留三段文案', () => {
     method: 'phin', bean: 'sad', strength: '标准', message: '不想活了' + '甲'.repeat(40) });
   assert.equal(input.crisis, true);
   assert.equal([...input.message].length, 30);
-  assert.deepEqual(extractBrewJson('```json\n{"name":"夜里的滴滴壶","note":"先坐一会儿","barista":"我在这里听你说","extra":1}\n```'),
-    { name: '夜里的滴滴壶', note: '先坐一会儿', barista: '我在这里听你说' });
+  assert.deepEqual(extractBrewJson('```json\n{"name":"夜里的滴滴壶","note":"先坐一会儿","barista":"我在这里听你说","extra":1}\n```', input),
+    { name: '有人在听', note: '先坐一会儿', barista: '我在这里听你说' });
+});
+
+test('咖啡名最多五个汉字，超长、直白情绪词和旧记录分享都改用短名', () => {
+  const input = validateBrewRequest({ battery: 3, layers: [{ emotion: 'tired', portions: 1 }],
+    method: 'dirty', bean: 'tired', strength: '标准', message: '今天加班到十点' });
+  assert.match(buildBrewPrompt(input), /2 到 5 个汉字/);
+  assert.equal(isValidBrewName('把夜喝浅'), true);
+  assert.equal(isValidBrewName('撑到下班的冰博克'), false);
+  assert.equal(isValidBrewName('开心一整天'), false);
+  assert.equal(isValidBrewName('微光7号'), false);
+  assert.equal(fallbackBrewName('tired'), '把夜喝浅');
+  assert.equal(shareBrewName('撑到下班的冰博克', 'tired'), '把夜喝浅');
+  assert.deepEqual(extractBrewJson('{"name":"撑到下班的冰博克","note":"今天没白熬","barista":"坐下喝完再走"}', input),
+    { name: '把夜喝浅', note: '今天没白熬', barista: '坐下喝完再走' });
 });
