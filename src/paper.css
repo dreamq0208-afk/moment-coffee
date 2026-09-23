@@ -53,7 +53,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .step svg{width:34px;height:34px}
 .step-arrow{color:var(--ink-2);font-size:14px;margin-top:9px}
 /* mix */
-.mix-title{font-size:32px;margin:4px 0 4px}
+.mix-title{font-size:clamp(28px,8vw,32px);margin:4px 0 4px}
 .mix-sub{font-size:13px;line-height:1.7;margin:0 0 12px}
 .battery{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .bat{display:flex;align-items:center;border:1.5px solid var(--ink);border-radius:3px;padding:2px;gap:2px;position:relative}
