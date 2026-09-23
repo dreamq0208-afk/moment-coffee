@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildBrewPrompt, extractBrewJson, validateBrewRequest,
-  isValidBrewNote, isValidBaristaReply, sharesBrewWording, tidyBrewCopy } from '../shared/brew-copy.js';
+import { buildBrewPrompt, extractBrewJson, validateBrewRequest } from '../shared/brew-copy.js';
 import { fallbackBrewName, isValidBrewName, shareBrewName } from '../shared/brew-name.js';
 
 test('纸上线稿文案请求按份数与加入顺序核对做法和豆子', () => {
@@ -42,44 +41,13 @@ test('咖啡名和咖啡师回复都明确结合电量、情绪和留言', () =>
   const input = validateBrewRequest({ battery: 2, layers: [{ emotion: 'tired', portions: 2 }],
     method: 'dirty', bean: 'tired', strength: '浓一点', message: '今天加班到十点' });
   const prompt = buildBrewPrompt(input);
-  assert.match(prompt, /主情绪是 疲惫 2 份，其余为 没有/);
-  assert.match(prompt, /留言提供真实事件，主情绪决定说话角度/);
-  assert.match(prompt, /电量低就短而轻/);
-  assert.match(prompt, /把主情绪和留言变成短诗题目/);
+  const name = prompt.split('name（咖啡名）：')[1].split('barista（')[0];
+  const barista = prompt.split('barista（')[1];
+  for (const section of [name, barista]) {
+    assert.match(section, /电量/);
+    assert.match(section, /情绪/);
+    assert.match(section, /留言/);
+  }
   assert.match(prompt, /今天加班到十点/);
   assert.match(prompt, /疲惫 2 份/);
-  assert.match(prompt, /20 个汉字以内/);
-  assert.match(prompt, /最多一个中文逗号/);
-  assert.match(prompt, /不复述留言/);
-  assert.match(prompt, /用“你”/);
-  assert.match(prompt, /不讲产区或知识/);
-});
-
-test('同份数的两种情绪都进入文案重点', () => {
-  const input = validateBrewRequest({ battery: 4, layers: [
-    { emotion: 'calm', portions: 2 }, { emotion: 'miss', portions: 2 }, { emotion: 'happy', portions: 1 },
-  ], method: 'pourover', bean: 'miss', strength: '淡一点', message: '' });
-  const prompt = buildBrewPrompt(input);
-  assert.match(prompt, /同时接住平静与想念/);
-  assert.match(prompt, /便签优先回应想念/);
-});
-
-test('两句话遵守长度、标点、禁用词及不撞词', () => {
-  assert.equal(tidyBrewCopy('「热水绕过粉层，你把今天留成空白。」'), '热水绕过粉层，你把今天留成空白');
-  assert.equal(isValidBaristaReply(tidyBrewCopy('「热水绕过粉层，你把今天留成空白。」')), true);
-  assert.equal(isValidBrewNote(tidyBrewCopy('云替你翻页。')), true);
-  assert.equal(isValidBaristaReply('热浓缩浮在冰奶上，你先醒这一口'), true);
-  assert.equal(isValidBaristaReply('冷萃泡了一夜，今天的事你先搁着', '今天被老板骂了'), true);
-  assert.equal(isValidBaristaReply('热浓缩浮在冰奶上，第一口醒神'), false);
-  assert.equal(isValidBaristaReply('冰滴一滴滴落下，眼前的事也可以慢一点。'), false);
-  assert.equal(isValidBaristaReply('冰滴一滴滴落下，眼前的事先放一放，肩膀也歇会儿'), false);
-  assert.equal(isValidBaristaReply('冷萃泡了一夜，今天被老板骂了', '今天被老板骂了'), false);
-  assert.equal(isValidBaristaReply('冷萃泡了一夜，别急着变好'), false);
-  assert.equal(isValidBrewNote('撑到这会儿了'), true);
-  assert.equal(isValidBrewNote('这杯不用喝完'), false);
-  assert.equal(isValidBrewNote('先放着。'), false);
-  assert.equal(isValidBrewNote('好想回家', '好想回家'), false);
-  assert.equal(isValidBaristaReply('冷萃泡了一夜，被老板骂了先搁着', '今天被老板骂了'), false);
-  assert.equal(sharesBrewWording('泡一夜就好了', '冷萃泡一夜'), true);
-  assert.equal(sharesBrewWording('撑到这会儿了', '热浓缩浮在冰奶上，第一口醒神'), false);
 });

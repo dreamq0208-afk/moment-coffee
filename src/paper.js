@@ -1,7 +1,6 @@
 
 import html2canvas from 'html2canvas';
 import { fallbackBrewName, isValidBrewName, shareBrewName } from '../shared/brew-name.js';
-import { isValidBrewNote, isValidBaristaReply, sharesBrewWording, tidyBrewCopy } from '../shared/brew-copy.js';
 import { playIngredient, playBell, unlockSound } from './sound.js';
 (function(){
 "use strict";
@@ -39,8 +38,9 @@ const BEAN={
   sad:{n:'哥伦比亚 · 朗姆桶陈',s:'朗姆桶',f:'朗姆酒、黑糖、葡萄干',g:'caramel',t:'#D9B38E'}
 };
 const BAT_TXT=['快没电了','有点累','还行','挺有劲','满格'];
-const FB_NOTE={happy:'这件事值得',excited:'脚步已经先走',calm:'这一刻不用赶',miss:'门口那盏灯',tired:'今晚先熄一盏',anxious:'这一页还悬着',regret:'错过的留一格',sad:'空着的也算数'};
-const HIDDEN_NOTES=['这一格只留给你','今天轮到你了','悄悄藏一份'];
+const FB_NOTE={happy:'这份开心，分你一口也不少',excited:'先坐下，杯子会等你',calm:'今天不赶时间',miss:'这杯的甜，留给想起的人',tired:'今天也算没白熬',anxious:'这口先替你咽下去',regret:'这杯不用喝完，捧着就好',sad:'今天可以不用懂事'};
+const HIDDEN_NOTES=['你是今天被偏爱的那一个','这杯没写在菜单上，只给你','今天的好运，先存在杯底'];
+const BANNED=['治愈','温暖','美好','元气','奔赴','热爱','生活','开心','兴奋','平静','想念','疲惫','焦虑','遗憾','悲伤','难过','伤心','快乐'];
 const CRISIS=['想死','不想活','自杀','轻生','结束生命','活不下去','伤害自己','割腕','去死'];
 const INK='#1C1B1A';
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -320,28 +320,17 @@ function buildCup(){
 }
 const M=c=>METHOD[c.methodKey],Bn=c=>BEAN[c.bean];
 function fallbackName(c){return fallbackBrewName(c.main,c.crisis)}
-function fallbackNote(c,barista=c.barista||''){
-  const mainLayer=c.layers.find(layer=>layer.e===c.main);
-  const secondLayer=c.layers.find(layer=>layer.e===c.second);
-  const noteMood=c.second!==c.main&&secondLayer?.p===mainLayer?.p?c.second:c.main;
-  const notes=c.hidden?HIDDEN_NOTES:[FB_NOTE[noteMood],'一页未写完','灯还亮着'];
-  const start=c.hidden?Math.floor(Math.random()*notes.length):0;
-  return Array.from({length:notes.length},(_,i)=>notes[(start+i)%notes.length])
-    .find(note=>!sharesBrewWording(note,barista))||notes[start];
-}
+function fallbackNote(c){return c.hidden?HIDDEN_NOTES[Math.floor(Math.random()*HIDDEN_NOTES.length)]:FB_NOTE[c.main]}
 function fallbackBarista(c){
-  const reply={
-    happy:'焦糖在杯底化开，你的好事多留一会',
-    excited:'气泡沿杯壁上升，你的好消息藏不住',
-    calm:'热水绕过粉层，你坐着就很好',
-    miss:'水落回壶里，你惦记的还在那里',
-    tired:'热浓缩落在冰奶上，你撑到这口了',
-    anxious:'冰滴一滴滴落下，你先放过时针',
-    regret:'冷萃泡了一夜，你那句没出口的先放着',
-    sad:'炼乳压在杯底，你的沉默也有重量',
-  }[c.main];
-  return reply;
+  const feeling={happy:'这份高兴值得多留一会儿',excited:'先让这份雀跃慢慢落地',calm:'安静待一会儿也很好',miss:'想念谁，就给心里留个位置',tired:'累了就先歇一会儿',anxious:'紧绷的事先放在我这儿',regret:'没说完的事可以留到明天',sad:'难过时不用马上想通'}[c.main];
+  const energy=c.battery<=2?'电量不多':c.battery>=4?'今天还有力气':'照自己的节奏';
+  const first=c.msg.split(/[，。！？,!?]/)[0];
+  const heard=first?`你说「${[...first].slice(0,12).join('')}${[...first].length>12?'…':''}」，我听见了。`:'';
+  return `${heard}${energy}，${feeling}。`;
 }
+const clen=s=>[...String(s).replace(/[，。、！？,.!?\s…“”"'「」]/g,'')].length;
+function okNote(s){return typeof s==='string'&&clen(s)>=5&&clen(s)<=18&&!BANNED.some(w=>s.includes(w))}
+function okBarista(s){return typeof s==='string'&&clen(s)>=10&&clen(s)<=36}
 
 async function generate(c){
   let out={};
@@ -356,11 +345,9 @@ async function generate(c){
       if(response.ok)out=await response.json();
     }finally{clearTimeout(timer)}
   }catch(e){out={}}
-  const generatedBarista=tidyBrewCopy(out.barista);
-  const generatedNote=tidyBrewCopy(out.note);
   c.name=!c.crisis&&isValidBrewName(out.name)?out.name:fallbackName(c);
-  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':isValidBaristaReply(generatedBarista,c.msg)?generatedBarista:fallbackBarista(c);
-  c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):isValidBrewNote(generatedNote,c.msg)&&!sharesBrewWording(generatedNote,c.barista)?generatedNote:fallbackNote(c);
+  c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):(okNote(out.note)?out.note.trim():fallbackNote(c));
+  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':okBarista(out.barista)?out.barista.trim():fallbackBarista(c);
   return c;
 }
 

@@ -53,7 +53,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .step svg{width:34px;height:34px}
 .step-arrow{color:var(--ink-2);font-size:14px;margin-top:9px}
 /* mix */
-.mix-title{font-size:clamp(28px,8vw,32px);margin:4px 0 4px}
+.mix-title{font-size:32px;margin:4px 0 12px}
 .mix-sub{font-size:13px;line-height:1.7;margin:0 0 12px}
 .battery{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .bat{display:flex;align-items:center;border:1.5px solid var(--ink);border-radius:3px;padding:2px;gap:2px;position:relative}
@@ -63,14 +63,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .cell{border:1px solid var(--line-soft)}
 .cell.full{background:var(--ink);border-color:var(--ink)}
 .bat-label{font-size:14px;font-weight:400;min-width:5em}
-.mix-stage{display:flex;flex-direction:column;align-items:center;gap:8px;margin:8px 0 0}
-.mix-cup{width:190px;height:242px;flex:none}
-.tags{width:100%;min-height:34px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}
-.tag{display:flex;align-items:center;gap:7px;min-height:32px;max-width:100%;border:1px solid var(--ink);border-radius:2px;background:transparent;padding:0 9px;font-size:12px;white-space:nowrap;text-align:left}
+.mix-stage{display:flex;align-items:flex-end;gap:4px;margin:0 -8px}
+.mix-cup{width:200px;height:254px;flex:none}
+.tags{flex:1;display:flex;flex-direction:column;gap:6px;justify-content:flex-end;padding-bottom:14px;min-height:200px}
+.tag{display:flex;align-items:center;gap:8px;min-height:32px;border:1px solid var(--ink);border-radius:2px;background:transparent;padding:0 8px;font-size:13px;text-align:left}
 .tag .sw{width:12px;height:12px;border:1px solid var(--ink);flex:none}
 .tag .x{margin-left:auto;color:var(--ink-2);font-size:12px}
 .tag.fixed{border-style:dashed;cursor:default}
-.jars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 6px;margin:16px 0 0}
+.jars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 6px;margin:10px 0 0}
 .jar{border:0;background:none;padding:2px 0 4px;display:flex;flex-direction:column;align-items:center;gap:0;font-size:13px;position:relative;min-height:84px}
 .jar svg{width:54px;height:62px}
 .jar .cnt{position:absolute;top:0;right:6px;font-family:var(--latin);font-size:11px;border:1px solid var(--ink);padding:0 4px;border-radius:2px;background:var(--paper)}
