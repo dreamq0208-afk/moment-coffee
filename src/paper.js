@@ -347,7 +347,7 @@ async function generate(c){
   let out={};
   try{
     const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),15000);
+    const timer=setTimeout(()=>controller.abort(),20000);
     try{
       const response=await fetch('/api/brew-copy',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
         battery:c.battery,layers:c.layers.filter(l=>l.e!=='base').map(l=>({emotion:l.e,portions:l.p})),
