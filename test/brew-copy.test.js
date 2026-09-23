@@ -55,6 +55,15 @@ test('咖啡名和咖啡师回复都明确结合电量、情绪和留言', () =>
   assert.match(prompt, /不讲产区或知识/);
 });
 
+test('同份数的两种情绪都进入文案重点', () => {
+  const input = validateBrewRequest({ battery: 4, layers: [
+    { emotion: 'calm', portions: 2 }, { emotion: 'miss', portions: 2 }, { emotion: 'happy', portions: 1 },
+  ], method: 'pourover', bean: 'miss', strength: '淡一点', message: '' });
+  const prompt = buildBrewPrompt(input);
+  assert.match(prompt, /同时接住平静与想念/);
+  assert.match(prompt, /便签优先回应想念/);
+});
+
 test('两句话遵守长度、标点、禁用词及不撞词', () => {
   assert.equal(tidyBrewCopy('「热水绕过粉层，你把今天留成空白。」'), '热水绕过粉层，你把今天留成空白');
   assert.equal(isValidBaristaReply(tidyBrewCopy('「热水绕过粉层，你把今天留成空白。」')), true);

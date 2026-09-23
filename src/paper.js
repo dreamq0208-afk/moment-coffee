@@ -321,7 +321,10 @@ function buildCup(){
 const M=c=>METHOD[c.methodKey],Bn=c=>BEAN[c.bean];
 function fallbackName(c){return fallbackBrewName(c.main,c.crisis)}
 function fallbackNote(c,barista=c.barista||''){
-  const notes=c.hidden?HIDDEN_NOTES:[FB_NOTE[c.main],'一页未写完','灯还亮着'];
+  const mainLayer=c.layers.find(layer=>layer.e===c.main);
+  const secondLayer=c.layers.find(layer=>layer.e===c.second);
+  const noteMood=c.second!==c.main&&secondLayer?.p===mainLayer?.p?c.second:c.main;
+  const notes=c.hidden?HIDDEN_NOTES:[FB_NOTE[noteMood],'一页未写完','灯还亮着'];
   const start=c.hidden?Math.floor(Math.random()*notes.length):0;
   return Array.from({length:notes.length},(_,i)=>notes[(start+i)%notes.length])
     .find(note=>!sharesBrewWording(note,barista))||notes[start];
