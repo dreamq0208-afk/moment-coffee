@@ -322,15 +322,25 @@ const M=c=>METHOD[c.methodKey],Bn=c=>BEAN[c.bean];
 function fallbackName(c){return fallbackBrewName(c.main,c.crisis)}
 function fallbackNote(c){return c.hidden?HIDDEN_NOTES[Math.floor(Math.random()*HIDDEN_NOTES.length)]:FB_NOTE[c.main]}
 function fallbackBarista(c){
-  const feeling={happy:'这份高兴值得多留一会儿',excited:'先让这份雀跃慢慢落地',calm:'安静待一会儿也很好',miss:'想念谁，就给心里留个位置',tired:'累了就先歇一会儿',anxious:'紧绷的事先放在我这儿',regret:'没说完的事可以留到明天',sad:'难过时不用马上想通'}[c.main];
-  const energy=c.battery<=2?'电量不多':c.battery>=4?'今天还有力气':'照自己的节奏';
-  const first=c.msg.split(/[，。！？,!?]/)[0];
-  const heard=first?`你说「${[...first].slice(0,12).join('')}${[...first].length>12?'…':''}」，我听见了。`:'';
-  return `${heard}${energy}，${feeling}。`;
+  const reply={
+    happy:'焦糖落进杯里，这一点甜值得在此刻多停一会儿。',
+    excited:'橙香冒了个头，先让心跳跟着气泡慢慢落地。',
+    calm:'燕麦奶轻轻铺开，今天就和这杯一起慢一点。',
+    miss:'桂花蜜留在杯底，想靠近的地方也留一点甜。',
+    tired:'冰牛奶托住热浓缩，今晚先让这杯替你醒一醒。',
+    anxious:'冰滴一滴一滴落下，眼前的事也可以慢一点。',
+    regret:'冷萃还在慢慢泡，没说完的事今晚先放一放。',
+    sad:'黑咖啡的苦有尽头，今天不用急着变得轻快。',
+  }[c.main];
+  return reply;
 }
 const clen=s=>[...String(s).replace(/[，。、！？,.!?\s…“”"'「」]/g,'')].length;
 function okNote(s){return typeof s==='string'&&clen(s)>=5&&clen(s)<=18&&!BANNED.some(w=>s.includes(w))}
-function okBarista(s){return typeof s==='string'&&clen(s)>=10&&clen(s)<=36}
+function okBarista(s,c){
+  if(typeof s!=='string'||clen(s)<10||clen(s)>36||/你(?:刚才)?说[「：“]|我听见了/.test(s))return false;
+  const message=c.msg.trim().replace(/[，。！？,!?\s]/g,'');
+  return message.length<4||!s.replace(/[，。！？,!?\s]/g,'').includes(message);
+}
 
 async function generate(c){
   let out={};
@@ -347,7 +357,7 @@ async function generate(c){
   }catch(e){out={}}
   c.name=!c.crisis&&isValidBrewName(out.name)?out.name:fallbackName(c);
   c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):(okNote(out.note)?out.note.trim():fallbackNote(c));
-  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':okBarista(out.barista)?out.barista.trim():fallbackBarista(c);
+  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':okBarista(out.barista,c)?out.barista.trim():fallbackBarista(c);
   return c;
 }
 

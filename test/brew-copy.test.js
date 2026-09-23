@@ -50,4 +50,8 @@ test('咖啡名和咖啡师回复都明确结合电量、情绪和留言', () =>
   }
   assert.match(prompt, /今天加班到十点/);
   assert.match(prompt, /疲惫 2 份/);
+  assert.match(barista, /做法、豆子和风味/);
+  assert.match(barista, /不要逐字引用、近义改写留言/);
+  assert.match(barista, /只取实际这杯的细节/);
+  assert.match(prompt.split('note（分享卡上的短句）：')[1].split('name（')[0], /不要复述留言/);
 });
