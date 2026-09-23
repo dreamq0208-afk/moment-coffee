@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
         { role: 'user', content: buildBrewPrompt(input) },
       ] }), signal: controller.signal,
     });
-    if (!upstream.ok) return json({ error: 'ai-upstream-error' }, 502);
+    if (!upstream.ok) return json({ error: 'ai-upstream-error', upstreamStatus: upstream.status }, 502);
     const payload = await upstream.json();
     return json(extractBrewJson(payload.choices?.[0]?.message?.content || '', input));
   } catch (error) {

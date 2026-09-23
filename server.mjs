@@ -35,7 +35,7 @@ app.post('/api/brew-copy', async (request, response) => {
       ] }),
       signal: controller.signal,
     });
-    if (!upstream.ok) return response.status(502).json({ error: 'ai-upstream-error' });
+    if (!upstream.ok) return response.status(502).json({ error: 'ai-upstream-error', upstreamStatus: upstream.status });
     const payload = await upstream.json();
     response.json(extractBrewJson(payload.choices?.[0]?.message?.content || '', input));
   } catch (error) {
