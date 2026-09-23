@@ -352,18 +352,43 @@ async function generate(c){
 }
 
 /* ---------- reveal ---------- */
-function openStory(){
-  $('#recipeOverlay').hidden=false;
-  $('#storyCard').focus();
+let storyMotion=null,storySequence=0;
+function storyFrame(){
+  const bean=$('#beanTrigger').getBoundingClientRect(),card=$('#storyCard').getBoundingClientRect();
+  const x=bean.left+bean.width/2-card.left-card.width/2;
+  const y=bean.top+bean.height/2-card.top-card.height/2;
+  return `translate(${x}px, ${y}px) scale(.12) rotate(-12deg)`;
 }
-function closeStory(){
+function animateStory(opening){
+  if(reduce)return Promise.resolve();
+  storyMotion?.cancel();
+  const small={transform:storyFrame(),opacity:0};
+  const full={transform:'translate(0, 0) scale(1) rotate(0)',opacity:1};
+  storyMotion=$('#storyCard').animate(opening?[small,full]:[full,small],{
+    duration:opening?520:380,easing:'cubic-bezier(.22,.8,.25,1)',fill:'both'
+  });
+  return storyMotion.finished.catch(()=>{});
+}
+function openStory(){
+  ++storySequence;
+  $('#recipeOverlay').hidden=false;
+  $('#beanTrigger').setAttribute('aria-expanded','true');
+  animateStory(true);
+  $('#storyCard').focus({preventScroll:true});
+}
+async function closeStory(){
   if($('#recipeOverlay').hidden)return;
+  const sequence=++storySequence;
+  await animateStory(false);
+  if(sequence!==storySequence)return;
   $('#recipeOverlay').hidden=true;
-  $('#beanTrigger').focus();
+  $('#beanTrigger').setAttribute('aria-expanded','false');
+  storyMotion?.cancel();storyMotion=null;
+  $('#beanTrigger').focus({preventScroll:true});
 }
 $('#beanTrigger').addEventListener('click',openStory);
 $('#storyCard').addEventListener('click',closeStory);
-$('#storyCard').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();closeStory()}});
+$('#storyCard').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault()}else if(e.key==='Enter'||e.key===' '){e.preventDefault();closeStory()}});
 $('#recipeBackdrop').addEventListener('click',closeStory);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#recipeOverlay').hidden)closeStory()});
 async function toReveal(){
@@ -374,7 +399,9 @@ async function toReveal(){
   $('#s-reveal').classList.toggle('hidden',c.hidden);
   $('#hiddenFlag').classList.toggle('on',c.hidden);
   $('#care').hidden=!c.crisis;
+  ++storySequence;storyMotion?.cancel();storyMotion=null;
   $('#recipeOverlay').hidden=true;
+  $('#beanTrigger').setAttribute('aria-expanded','false');
   $('#recipeOverlay').classList.toggle('hidden-cup',c.hidden);
   $('#storyMethod').textContent=`${M(c).n} · ${c.strength}`;
   $('#storyBean').textContent=Bn(c).n;
@@ -390,7 +417,10 @@ async function toReveal(){
   sv.classList.remove('in');stageNote.classList.remove('in');$('#confetti').innerHTML='';
   sv.innerHTML=vesselSVG(c,{anim:true,label:`${M(c).n}`});
   const gen=generate(c);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{sv.classList.add('in');stageNote.classList.add('in')}));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(S.cup!==c)return;
+    sv.classList.add('in');stageNote.classList.add('in');openStory();
+  }));
   await wait(1300);
   if(S.cup!==c)return;
   if(c.hidden)confetti();
@@ -505,19 +535,26 @@ async function rasterizeCardSvg(svg){
     const canvas=document.createElement('canvas');canvas.width=Math.round(rect.width*scale);canvas.height=Math.round(rect.height*scale);
     const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,canvas.width,canvas.height);
     const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
-    if(!pixels.some((value,i)=>i%4===3&&value>0))throw new Error('cup-image-empty');
-    return{src:canvas.toDataURL('image/png'),width:rect.width,height:rect.height,style:svg.getAttribute('style')||''};
+    let visible=0;
+    for(let i=3;i<pixels.length;i+=4)if(pixels[i]>32)visible++;
+    if(visible<canvas.width*canvas.height*.01)throw new Error('cup-image-empty');
+    return canvas;
   }finally{URL.revokeObjectURL(url)}
 }
 async function captureCard(){
   const card=$('#cardWrap .sc');
-  const images=await Promise.all([...card.querySelectorAll('svg.v')].map(rasterizeCardSvg));
-  if(!images.length)throw new Error('cup-image-missing');
-  return html2canvas(card,{scale:3,backgroundColor:'#F0EFEB',useCORS:true,logging:false,onclone:doc=>{
-    const svgs=doc.querySelectorAll('#cardWrap .sc svg.v');
-    if(svgs.length!==images.length)throw new Error('cup-image-mismatch');
-    svgs.forEach((svg,i)=>{const data=images[i],img=doc.createElement('img');img.src=data.src;img.style.cssText=data.style;img.style.width=`${data.width}px`;img.style.height=`${data.height}px`;svg.replaceWith(img)});
+  const cardRect=card.getBoundingClientRect();
+  const vessels=[...card.querySelectorAll('svg.v')];
+  if(!vessels.length)throw new Error('cup-image-missing');
+  const cups=await Promise.all(vessels.map(async svg=>({rect:svg.getBoundingClientRect(),canvas:await rasterizeCardSvg(svg)})));
+  const result=await html2canvas(card,{scale:3,backgroundColor:'#F0EFEB',useCORS:true,logging:false,onclone:doc=>{
+    doc.querySelectorAll('#cardWrap .sc svg.v').forEach(svg=>{svg.style.visibility='hidden'});
   }});
+  const ctx=result.getContext('2d'),sx=result.width/cardRect.width,sy=result.height/cardRect.height;
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);
+  cups.forEach(({rect,canvas})=>ctx.drawImage(canvas,(rect.left-cardRect.left)*sx,(rect.top-cardRect.top)*sy,rect.width*sx,rect.height*sy));
+  ctx.restore();
+  return result;
 }
 $('#saveImg').addEventListener('click',async()=>{
   const button=$('#saveImg');
