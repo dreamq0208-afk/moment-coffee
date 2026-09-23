@@ -24,4 +24,4 @@ npm start
 
 新文案接口是 `POST /api/brew-copy`。现有 `POST /api/copy` 保留给旧版调用方，不用于当前页面。EdgeOne 版本在 `edge-functions/api/brew-copy.js`。构建输出目录 `dist`；当前仓库的 `scripts/package-edgeone.ps1` 可制作 EdgeOne 源码包。
 
-咖啡柜使用浏览器本地存储 `moment-cafe-paper:cups`，不同设备间不会同步。分享卡导出为 900×1200 PNG。国内网络无需加载 Google Fonts；本地字体及其 OFL 许可证位于 `public/fonts`。
+咖啡柜使用浏览器本地存储 `moment-cafe-paper:cups`，不同设备间不会同步。分享卡导出为 900×1200 PNG。国内网络无需加载 Google Fonts；本地字体及其 OFL 许可证位于 `public/fonts`。手写体首屏使用小字库；揭晓时按需加载常用字补充包，供模型生成的新名字和纸条使用。

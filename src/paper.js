@@ -345,6 +345,7 @@ async function generate(c){
 /* ---------- reveal ---------- */
 async function toReveal(){
   const c=buildCup();S.cup=c;S.saved=false;
+  document.fonts.load('400 32px "Long Cang Extra"','院').catch(()=>{});
   show('s-reveal');
   const stage=$('#stage'),sv=$('#stageVessel'),note=$('#note'),nameEl=$('#cupName');
   $('#s-reveal').classList.toggle('hidden',c.hidden);

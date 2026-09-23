@@ -1,9 +1,10 @@
 @font-face{font-family:"Long Cang";src:url("/fonts/paper-hand.woff2") format("woff2");font-weight:400;font-display:swap}@font-face{font-family:"Noto Sans SC";src:url("/fonts/paper-sans.woff2") format("woff2");font-weight:300 400;font-display:swap}@font-face{font-family:"Jost";src:url("/fonts/paper-latin.woff2") format("woff2");font-weight:300 400;font-display:swap}
+@font-face{font-family:"Long Cang Extra";src:url("/fonts/paper-hand-extra.woff2") format("woff2");font-weight:400;font-display:swap}
 
 :root{
   --paper:#FBFBF9;--card:#F0EFEB;--ink:#1C1B1A;--ink-2:#6F6C67;--line-soft:rgba(28,27,26,.14);
   --sticker:#A3BD5B;--gold:#D9B55A;--gold-paper:#F7EDCF;--note:#FFFFFF;
-  --hand:"Long Cang","Kaiti SC","STKaiti",cursive;
+  --hand:"Long Cang","Long Cang Extra","Kaiti SC","STKaiti",cursive;
   --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
   --latin:"Jost","Noto Sans SC",sans-serif;
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
