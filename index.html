@@ -1,117 +1,144 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#EDEFEA">
-  <meta name="description" content="用一杯咖啡，接住你此刻的心情。">
-  <title>此刻咖啡馆</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>此刻咖啡馆</title>
+<link rel="stylesheet" href="/src/paper.css">
 </head>
 <body>
-<main class="shop">
-  <div class="sign">
-    <button class="back" id="back" type="button" aria-label="不改了，返回">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg>不改了
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="wob"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+<svg class="grain" aria-hidden="true"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .45  0 0 0 0 .44  0 0 0 0 .42  0 0 0 .13 0"/></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
+
+<div id="app">
+
+<!-- 1 开屏 -->
+<section class="screen on" id="s-start" aria-label="开屏">
+  <div class="topbar">
+    <span></span>
+    <button class="iconbtn" id="toCabinet" aria-label="我的咖啡柜"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M4 3H20V21H4Z"/><path d="M4 9H20M4 15H20"/><path d="M8 7V5M11 7V6M15 13V11M9 19V17"/></svg></button>
+  </div>
+  <button class="start-cup" id="startCup" aria-label="此刻咖啡馆的杯子"><svg id="openGlass" viewBox="0 0 220 280" width="190" height="240"></svg></button>
+  <h1 class="slogan hand">把此刻，<br>调成一杯咖啡。</h1>
+  <p class="lead">说说你的电量，加几种情绪进去。<br>咖啡师会给你做一杯刚刚好的。</p>
+  <div class="steps" aria-label="三步">
+    <div class="step"><svg viewBox="0 0 34 34" class="ln-thin"><rect x="4" y="11" width="23" height="12" rx="2"/><path d="M29 15V19"/><rect x="7" y="14" width="5" height="6" class="inkfill" stroke="none"/><rect x="13" y="14" width="5" height="6" class="inkfill" stroke="none"/></svg>看看电量</div>
+    <span class="step-arrow" aria-hidden="true">›</span>
+    <div class="step"><svg viewBox="0 0 34 34" class="ln-thin"><path d="M11 6H23V9H11Z" class="inkfill"/><path d="M10 11Q9 12 9 15V27Q9 30 12 30H22Q25 30 25 27V15Q25 12 24 11Z"/><circle cx="14.5" cy="17" r=".8" class="inkfill"/><circle cx="19.5" cy="17" r=".8" class="inkfill"/><path d="M15 20Q17 22 19 20"/></svg>放进心情</div>
+    <span class="step-arrow" aria-hidden="true">›</span>
+    <div class="step"><svg viewBox="0 0 34 34" class="ln-thin"><path d="M9 9L11 30H23L25 9"/><path d="M9 9H25"/><path d="M14 4Q13 6 14 7M18 3Q17 5 18 7M22 4Q21 6 22 7"/></svg>领一杯此刻</div>
+  </div>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px">
+    <button class="btn solid" id="goMix">开始调一杯</button>
+    <button class="link" id="goRandom" style="align-self:center">今天随便来一杯</button>
+  </div>
+</section>
+
+<!-- 2 调配页 -->
+<section class="screen" id="s-mix" aria-label="调配页">
+  <div class="topbar">
+    <button class="iconbtn" data-back="s-start" aria-label="返回"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M15 5L8 12L15 19"/></svg></button>
+    <span></span>
+  </div>
+  <h1 class="mix-title hand">往杯子里放点此刻</h1>
+  <p class="mix-sub muted">先点电量，再点罐子。点一下加一点，再点一下多一点。</p>
+  <div class="battery">
+    <div class="bat" role="radiogroup" aria-label="电量" id="bat"></div>
+    <span class="bat-label" id="batLabel"></span>
+  </div>
+  <div class="mix-stage">
+    <svg class="mix-cup" id="mixGlass" viewBox="0 0 220 280" role="img" aria-label="正在调的这杯"></svg>
+    <div class="tags" id="tags" aria-label="杯里的每一层"></div>
+  </div>
+  <div class="jars" id="jars"></div>
+  <p class="status muted" id="status" aria-live="polite"></p>
+  <div class="mix-foot">
+    <div style="display:flex">
+      <button class="iconbtn" id="undo" aria-label="撤回一步"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M9 7L4 12L9 17"/><path d="M4 12H14Q20 12 20 18"/></svg></button>
+      <button class="iconbtn" id="dump" aria-label="倒掉重来"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M5 6L17 9L14 20L4 17Z"/><path d="M17 11Q21 13 20 18"/><circle cx="20" cy="21" r=".8" class="inkfill"/></svg></button>
+    </div>
+    <button class="bell" id="bell" aria-label="摇铃，交给咖啡师">
+      <span class="bell-hint" id="bellHint"></span>
+      <svg viewBox="0 0 60 46" id="bellSvg"><path class="ln" d="M12 36Q12 16 30 16Q48 16 48 36Z"/><path class="inkfill" d="M6 36H54V40H6Z"/><path class="inkfill" d="M27 11H33V16H27Z"/><path class="ln-thin" d="M20 28Q21 22 26 20"/></svg>
     </button>
-    <b>此刻咖啡馆</b><span id="today"></span>
   </div>
+</section>
 
-  <div class="bar" aria-hidden="true">
-    <svg id="cup" viewBox="0 0 200 270" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <clipPath id="inner"><path d="M33,29 L167,29 L152,236 Q151,242 144,242 L56,242 Q49,242 48,236 Z"/></clipPath>
-        <clipPath id="fillclip"><rect id="fillrect" x="0" y="242" width="200" height="0"/></clipPath>
-      </defs>
-      <ellipse class="shadow" cx="100" cy="258" rx="62" ry="6"/>
-      <g class="steam" id="steam" style="display:none">
-        <path d="M80,14 q-7,-9 0,-18 q7,-9 0,-18"/>
-        <path d="M100,12 q-7,-9 0,-18 q7,-9 0,-18"/>
-        <path d="M120,14 q-7,-9 0,-18 q7,-9 0,-18"/>
-      </g>
-      <rect id="stream" x="97" y="-30" width="6" rx="3" height="0" opacity="0"/>
-      <g clip-path="url(#inner)">
-        <g clip-path="url(#fillclip)"><g id="liquid"></g></g>
-        <g id="toppings"></g>
-      </g>
-      <path class="outline" d="M28,25 C70,23.5 128,26 172,24.5 L157,238 Q155.5,248.5 145,248 L55,248.5 Q45,248 43.5,238 Z"/>
-      <path class="outline2" d="M30,27 L45,236"/>
-      <path class="outline2" d="M170,27 L155.5,236"/>
-      <g id="garnish"></g>
-    </svg>
+<!-- 3 等待页 -->
+<section class="screen" id="s-wait" aria-label="等待页">
+  <svg class="wait-cup" id="waitGlass" viewBox="0 0 220 280" role="img" aria-label="刚刚放进去的"></svg>
+  <p class="wait-cap muted">刚刚你放进去的</p>
+  <h1 class="wait-title hand">咖啡师在做了</h1>
+  <label for="msg" style="font-size:14px;margin:0 0 10px;display:block">趁这会儿，想跟咖啡师说点什么吗？</label>
+  <input class="field" id="msg" maxlength="30" placeholder="开了一下午的会，脑子嗡嗡的" autocomplete="off">
+  <p class="count muted"><span id="msgCount">0</span>/30</p>
+  <div class="row" style="margin-top:auto">
+    <button class="btn" id="skipMsg">不说了，直接看</button>
+    <button class="btn solid" id="sendMsg">说好了</button>
   </div>
+</section>
 
-  <section id="order">
-    <h1>此刻的你<br>适合哪一杯</h1>
-    <p class="lede">点几下就好，剩下的交给咖啡师。</p>
-    <div class="q">
-      <h2>电量还剩多少</h2>
-      <div class="battery"><div class="cells" id="cells" role="radiogroup" aria-label="电量"></div><output id="energyText"></output></div>
-    </div>
-    <div class="q">
-      <h2>现在是什么感觉 <small>最多选三个</small></h2>
-      <div class="chips" id="chips"></div>
-    </div>
-    <div class="q">
-      <h2>想跟咖啡师说一句吗 <small>可以不写</small></h2>
-      <input class="say" id="say" maxlength="60" placeholder="比如：方案又被打回来了" autocomplete="off">
-    </div>
-    <button class="primary" id="brew" disabled>先选一个感觉</button>
-  </section>
-
-  <section id="result" hidden>
-    <p class="status" id="status" role="status"></p>
-    <div class="reveal" id="headBlock">
-      <div class="name" id="drinkName"></div>
-      <p class="real" id="drinkReal"></p>
-      <p class="why" id="why"></p>
-      <details class="drink-info" id="drinkInfoDetails">
-        <summary>这杯是什么</summary>
-        <dl>
-          <div><dt>口感</dt><dd id="taste"></dd></div>
-          <div><dt>咖啡因</dt><dd id="caffeine"></dd></div>
-          <div><dt>适合</dt><dd id="moment"></dd></div>
-        </dl>
-      </details>
-      <button class="tweak" id="tweak" type="button" hidden>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3L6 13H3v-3z"/></svg>不太对，我改一下
-      </button>
-    </div>
-    <div class="sleeve reveal" id="sleeveBlock"><p class="note wait" id="note">咖啡师在写杯套……</p></div>
-    <div class="reveal" id="receiptBlock">
-      <div class="receipt" id="receipt"></div>
-      <div class="actions">
-        <button class="primary" id="save" hidden>保存小票</button>
-        <button class="ghost" id="again">再点一杯</button>
-      </div>
-      <p class="toast" id="toast" role="status"></p>
-    </div>
-  </section>
-
-  <section id="edit" hidden>
-    <div class="whisper" aria-live="polite">
-      <p class="hand" id="whisper">想怎么改都行，我看着呢。</p>
-      <p class="hint" id="whisperHint">每改一下，杯子都会跟着变</p>
-    </div>
-    <div class="live"><b id="liveName"></b><span id="liveSpec"></span></div>
-    <div class="tabs" role="tablist" id="tabs"></div>
-    <div class="opts" id="opts" role="radiogroup"></div>
-  </section>
-</main>
-
-<div class="dock">
-  <div class="dock-inner">
-    <button class="ghost" id="swap" type="button">换一杯</button>
-    <button class="primary" id="done" type="button">就这杯</button>
+<!-- 4 揭晓页 -->
+<section class="screen" id="s-reveal" aria-label="揭晓页">
+  <div class="hidden-flag" id="hiddenFlag"><span class="sticker" style="background:var(--gold)"><svg viewBox="0 0 18 18" width="16" height="16"><path d="M9 2Q10 8 16 9Q10 10 9 16Q8 10 2 9Q8 8 9 2Z" fill="#1C1B1A"/></svg></span>隐藏款 · 今天归你</div>
+  <div class="stage" id="stage">
+    <svg class="bar-line" viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true"><path class="ln" filter="url(#wob)" d="M-4 8Q100 10 200 7T404 8"/><path class="ln-thin" d="M-4 16Q120 17 240 15T404 16" opacity=".5"/></svg>
+    <div class="stage-vessel" id="stageVessel"></div>
+    <div class="note" id="note"><svg class="tape" viewBox="0 0 62 20" aria-hidden="true"><path id="tapeFill" d="M2 3L60 1L59 18L1 19Z"/></svg><p class="hand" id="noteText"></p></div>
+    <span class="pa hand" id="pa" aria-hidden="true">啪</span>
+    <div class="confetti" id="confetti"></div>
   </div>
+  <h1 class="cup-name hand" id="cupName"></h1>
+  <p class="cup-date muted latin" id="cupDate"></p>
+  <p class="care" id="care" hidden>如果你正在经历很难熬的时刻，可以联系身边信任的人，或者当地的心理援助热线。</p>
+  <button class="link" id="howLink" style="align-self:flex-start;padding:0;margin-top:6px">这杯是怎么来的 ›</button>
+  <div class="row" style="margin-top:auto;padding-top:16px">
+    <button class="btn" id="again">再调一杯</button>
+    <button class="btn solid" id="takeAway">带走这杯</button>
+  </div>
+</section>
+
+<!-- 5 分享页 -->
+<section class="screen" id="s-share" aria-label="分享页">
+  <div class="topbar">
+    <button class="iconbtn" data-back="s-reveal" aria-label="返回"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M15 5L8 12L15 19"/></svg></button>
+    <span style="font-size:14px;font-weight:400">挑一种样子带走</span>
+    <span style="width:44px"></span>
+  </div>
+  <div class="tabs" role="tablist" id="styleTabs">
+    <button role="tab" data-style="receipt" aria-selected="true">小票</button>
+    <button role="tab" data-style="polaroid" aria-selected="false">拍立得</button>
+    <button role="tab" data-style="journal" aria-selected="false">手帐</button>
+    <button role="tab" data-style="label" aria-selected="false">杯标签</button>
+  </div>
+  <div class="card-wrap" id="cardWrap"></div>
+  <div class="row" style="margin-top:auto">
+    <button class="btn" id="saveImg">保存图片</button>
+    <button class="btn solid" id="toShelf">收进咖啡柜</button>
+  </div>
+</section>
+
+<!-- 6 咖啡柜 -->
+<section class="screen" id="s-cabinet" aria-label="咖啡柜">
+  <div class="topbar">
+    <button class="iconbtn" id="cabBack" aria-label="返回"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M15 5L8 12L15 19"/></svg></button>
+    <span></span>
+  </div>
+  <h1 class="cab-title hand">我的咖啡柜</h1>
+  <p class="muted" style="font-size:13px;margin:0">每一杯都收在这里，按月摆好</p>
+  <div class="months" role="tablist" id="months"></div>
+  <div id="shelfWrap"></div>
+  <button class="btn solid" id="cabAgain" style="margin-top:auto">再调一杯</button>
+</section>
 </div>
 
-<div class="save-overlay" id="saveOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle">
-  <div class="save-sheet">
-    <div class="save-head"><b id="saveTitle">长按保存小票</b><button id="closeSave" type="button" aria-label="关闭">×</button></div>
-    <img id="savedReceipt" alt="此刻咖啡馆小票图片">
-    <p>长按图片，选“存储到照片”。</p>
-  </div>
+<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet" id="sheet"></div>
 </div>
-  <script type="module" src="/src/main.js"></script>
+<div class="toast" id="toast" role="status"></div>
+
+<script type="module" src="/src/paper.js"></script>
 </body>
 </html>
