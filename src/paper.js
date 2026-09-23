@@ -1,6 +1,7 @@
 
 import html2canvas from 'html2canvas';
 import { fallbackBrewName, isValidBrewName, shareBrewName } from '../shared/brew-name.js';
+import { isValidBrewNote, isValidBaristaReply, sharesBrewWording } from '../shared/brew-copy.js';
 import { playIngredient, playBell, unlockSound } from './sound.js';
 (function(){
 "use strict";
@@ -38,9 +39,8 @@ const BEAN={
   sad:{n:'哥伦比亚 · 朗姆桶陈',s:'朗姆桶',f:'朗姆酒、黑糖、葡萄干',g:'caramel',t:'#D9B38E'}
 };
 const BAT_TXT=['快没电了','有点累','还行','挺有劲','满格'];
-const FB_NOTE={happy:'这份轻快，分你一口也不少',excited:'先坐下，杯子会等你',calm:'今天不赶时间',miss:'这杯的甜，留给想起的人',tired:'今天也算没白熬',anxious:'这口先替你咽下去',regret:'这杯不用喝完，捧着就好',sad:'今天可以不用懂事'};
-const HIDDEN_NOTES=['你是今天被偏爱的那一个','这杯没写在菜单上，只给你','今天的好运，先存在杯底'];
-const BANNED=['治愈','温暖','美好','元气','奔赴','热爱','生活','开心','兴奋','平静','想念','疲惫','焦虑','遗憾','悲伤','难过','伤心','快乐'];
+const FB_NOTE={happy:'这事值得说说',excited:'趁现在出门',calm:'就这样待着',miss:'你有来处',tired:'撑到这会儿了',anxious:'肩膀放低点',regret:'留点力气',sad:'今天先不懂事'};
+const HIDDEN_NOTES=['这一格只留给你','今天轮到你了','悄悄藏一份'];
 const CRISIS=['想死','不想活','自杀','轻生','结束生命','活不下去','伤害自己','割腕','去死'];
 const INK='#1C1B1A';
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -320,26 +320,24 @@ function buildCup(){
 }
 const M=c=>METHOD[c.methodKey],Bn=c=>BEAN[c.bean];
 function fallbackName(c){return fallbackBrewName(c.main,c.crisis)}
-function fallbackNote(c){return c.hidden?HIDDEN_NOTES[Math.floor(Math.random()*HIDDEN_NOTES.length)]:FB_NOTE[c.main]}
+function fallbackNote(c,barista=c.barista||''){
+  const notes=c.hidden?HIDDEN_NOTES:[FB_NOTE[c.main],'在这里坐坐','这一刻归你'];
+  const start=c.hidden?Math.floor(Math.random()*notes.length):0;
+  return Array.from({length:notes.length},(_,i)=>notes[(start+i)%notes.length])
+    .find(note=>!sharesBrewWording(note,barista))||notes[start];
+}
 function fallbackBarista(c){
   const reply={
-    happy:'焦糖落进杯里，这一点甜值得在此刻多停一会儿。',
-    excited:'橙香冒了个头，先让心跳跟着气泡慢慢落地。',
-    calm:'燕麦奶轻轻铺开，今天就和这杯一起慢一点。',
-    miss:'桂花蜜留在杯底，想靠近的地方也留一点甜。',
-    tired:'冰牛奶托住热浓缩，今晚先让这杯替你醒一醒。',
-    anxious:'冰滴一滴一滴落下，眼前的事也可以慢一点。',
-    regret:'冷萃还在慢慢泡，没说完的事今晚先放一放。',
-    sad:'黑咖啡的苦有尽头，今天不用急着变得轻快。',
+    happy:'焦糖落进杯里，甜味多待一会儿',
+    excited:'橙香冒了个头，心跳跟着气泡落地',
+    calm:'燕麦奶轻轻铺开，脚步也停一停',
+    miss:'桂花蜜留在杯底，路还记得来时',
+    tired:'热浓缩浮在冰奶上，第一口醒神',
+    anxious:'冰滴一滴滴落下，手边先空一会儿',
+    regret:'冷萃泡了一夜，今天的事先搁着',
+    sad:'黑咖啡沉在杯底，今夜就坐在这儿',
   }[c.main];
   return reply;
-}
-const clen=s=>[...String(s).replace(/[，。、！？,.!?\s…“”"'「」]/g,'')].length;
-function okNote(s){return typeof s==='string'&&clen(s)>=5&&clen(s)<=18&&!BANNED.some(w=>s.includes(w))}
-function okBarista(s,c){
-  if(typeof s!=='string'||clen(s)<10||clen(s)>36||/你(?:刚才)?说[「：“]|我听见了/.test(s))return false;
-  const message=c.msg.trim().replace(/[，。！？,!?\s]/g,'');
-  return message.length<4||!s.replace(/[，。！？,!?\s]/g,'').includes(message);
 }
 
 async function generate(c){
@@ -356,8 +354,8 @@ async function generate(c){
     }finally{clearTimeout(timer)}
   }catch(e){out={}}
   c.name=!c.crisis&&isValidBrewName(out.name)?out.name:fallbackName(c);
-  c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):(okNote(out.note)?out.note.trim():fallbackNote(c));
-  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':okBarista(out.barista,c)?out.barista.trim():fallbackBarista(c);
+  c.barista=c.crisis?'我认真听到了你的话。现在请联系身边信任的人，或当地心理援助热线。':isValidBaristaReply(out.barista,c.msg)?out.barista.trim():fallbackBarista(c);
+  c.note=c.crisis?'你值得有人陪着，先找信任的人说说':c.hidden?fallbackNote(c):isValidBrewNote(out.note,c.msg)&&!sharesBrewWording(out.note,c.barista)?out.note.trim():fallbackNote(c);
   return c;
 }
 
