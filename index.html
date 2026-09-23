@@ -13,13 +13,11 @@
 <svg class="grain" aria-hidden="true"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .45  0 0 0 0 .44  0 0 0 0 .42  0 0 0 .13 0"/></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
 
 <div id="app">
+<button class="iconbtn cabinet-shortcut" id="toCabinet" aria-label="我的咖啡柜"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M4 3H20V21H4Z"/><path d="M4 9H20M4 15H20"/><path d="M8 7V5M11 7V6M15 13V11M9 19V17"/></svg></button>
 
 <!-- 1 开屏 -->
 <section class="screen on" id="s-start" aria-label="开屏">
-  <div class="topbar">
-    <span></span>
-    <button class="iconbtn" id="toCabinet" aria-label="我的咖啡柜"><svg viewBox="0 0 24 24" class="ln-thin"><path d="M4 3H20V21H4Z"/><path d="M4 9H20M4 15H20"/><path d="M8 7V5M11 7V6M15 13V11M9 19V17"/></svg></button>
-  </div>
+  <div class="topbar" aria-hidden="true"></div>
   <button class="start-cup" id="startCup" aria-label="此刻咖啡馆的杯子"><svg id="openGlass" viewBox="0 0 220 280" width="190" height="240"></svg></button>
   <h1 class="slogan hand">把此刻，<br>调成一杯咖啡。</h1>
   <p class="lead">说说你的电量，加几种情绪进去。<br>咖啡师会给你做一杯刚刚好的。</p>

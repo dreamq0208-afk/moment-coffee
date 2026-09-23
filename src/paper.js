@@ -224,7 +224,7 @@ let taps=0,tapStart=0;
 $('#startCup').addEventListener('click',()=>{const now=Date.now();if(now-tapStart>2000){taps=0;tapStart=now}taps++;if(taps>=5){taps=0;S.forceHidden=!S.forceHidden;toast(S.forceHidden?'下一杯必出隐藏款':'隐藏款恢复随机')}});
 $('#goMix').addEventListener('click',()=>{resetMix();show('s-mix')});
 $('#goRandom').addEventListener('click',()=>{unlockSound();randomCup()});
-$('#toCabinet').addEventListener('click',()=>{cabFrom='s-start';openCabinet()});
+$('#toCabinet').addEventListener('click',()=>{if(current==='s-cabinet')return;cabFrom=current;openCabinet()});
 
 /* ---------- mix ---------- */
 const mixGlass=new Glass($('#mixGlass'));
@@ -473,12 +473,43 @@ function cardHTML(c,style){
 }
 function renderCard(){$('#cardWrap').innerHTML=cardHTML(S.cup,S.style);document.querySelectorAll('#styleTabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.style===S.style));$('#toShelf').textContent=S.saved?'去咖啡柜看看':'收进咖啡柜'}
 document.querySelectorAll('#styleTabs button').forEach(b=>b.addEventListener('click',()=>{S.style=b.dataset.style;renderCard()}));
+async function rasterizeCardSvg(svg){
+  const rect=svg.getBoundingClientRect(),scale=3;
+  if(!rect.width||!rect.height)throw new Error('svg-has-no-size');
+  const copy=svg.cloneNode(true),originals=[svg,...svg.querySelectorAll('*')],clones=[copy,...copy.querySelectorAll('*')];
+  const properties=['fill','stroke','stroke-width','stroke-linecap','stroke-linejoin','opacity','color'];
+  originals.forEach((node,i)=>{const style=getComputedStyle(node);properties.forEach(key=>clones[i].style.setProperty(key,style.getPropertyValue(key)))});
+  // The page filter lives outside this SVG; keep the exported vessel self-contained.
+  copy.querySelectorAll('[filter]').forEach(node=>node.removeAttribute('filter'));
+  copy.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  copy.setAttribute('width',rect.width*scale);copy.setAttribute('height',rect.height*scale);
+  const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(copy)],{type:'image/svg+xml'}));
+  try{
+    const image=new Image();
+    await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src=url});
+    const canvas=document.createElement('canvas');canvas.width=Math.round(rect.width*scale);canvas.height=Math.round(rect.height*scale);
+    const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,canvas.width,canvas.height);
+    const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    if(!pixels.some((value,i)=>i%4===3&&value>0))throw new Error('cup-image-empty');
+    return{src:canvas.toDataURL('image/png'),width:rect.width,height:rect.height,style:svg.getAttribute('style')||''};
+  }finally{URL.revokeObjectURL(url)}
+}
+async function captureCard(){
+  const card=$('#cardWrap .sc');
+  const images=await Promise.all([...card.querySelectorAll('svg.v')].map(rasterizeCardSvg));
+  if(!images.length)throw new Error('cup-image-missing');
+  return html2canvas(card,{scale:3,backgroundColor:'#F0EFEB',useCORS:true,logging:false,onclone:doc=>{
+    const svgs=doc.querySelectorAll('#cardWrap .sc svg.v');
+    if(svgs.length!==images.length)throw new Error('cup-image-mismatch');
+    svgs.forEach((svg,i)=>{const data=images[i],img=doc.createElement('img');img.src=data.src;img.style.cssText=data.style;img.style.width=`${data.width}px`;img.style.height=`${data.height}px`;svg.replaceWith(img)});
+  }});
+}
 $('#saveImg').addEventListener('click',async()=>{
   const button=$('#saveImg');
   button.disabled=true;button.textContent='在洗照片…';
   try{
     await document.fonts.ready;
-    const canvas=await html2canvas($('#cardWrap .sc'),{scale:3,backgroundColor:'#F0EFEB',useCORS:true,logging:false});
+    const canvas=await captureCard();
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
     if(!blob)throw new Error('image-export-failed');
     const filename=`此刻咖啡馆-${S.cup.name.replace(/[\\/:*?"<>|]/g,'')}.png`;
@@ -543,7 +574,7 @@ function renderCabinet(focusMonth){
   html+='</div>';$('#shelfWrap').innerHTML=html;
   document.querySelectorAll('.slot').forEach(b=>b.addEventListener('click',()=>{const c=cups.find(x=>x.id===b.dataset.id);if(c)openSheet(`<div class="topbar"><h2 id="sheetTitle">${fmtDate(c.createdAt)}</h2>${closeBtn}</div><div class="modal-card">${cardHTML(c,c.style||'receipt')}</div>`)}));
 }
-$('#cabBack').addEventListener('click',()=>show(cabFrom==='s-share'&&S.cup?'s-share':'s-start'));
+$('#cabBack').addEventListener('click',()=>show(cabFrom));
 $('#cabAgain').addEventListener('click',()=>{resetMix();show('s-mix')});
 
 /* ---------- boot ---------- */

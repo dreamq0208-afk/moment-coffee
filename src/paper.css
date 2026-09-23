@@ -27,6 +27,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .topbar{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:0 -12px}
 .iconbtn{width:44px;height:44px;border:0;background:none;display:inline-flex;align-items:center;justify-content:center;padding:0}
 .iconbtn svg{width:22px;height:22px}
+.cabinet-shortcut{position:absolute;top:12px;right:10px;z-index:3}
 .btn{min-height:48px;border:1px solid var(--ink);background:transparent;border-radius:2px;font-size:15px;font-weight:400;padding:0 18px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn.solid{background:var(--ink);color:var(--paper)}
 .btn:active{transform:translateY(1px)}
