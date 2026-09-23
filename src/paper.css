@@ -84,7 +84,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 @keyframes shake{20%{transform:rotate(-9deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(3deg)}}
 /* wait */
 .wait-cup{width:150px;height:190px;margin:18px auto 0;display:block}
-.wait-cap{text-align:center;font-size:12px;margin:0}
 .wait-title{font-size:36px;margin:22px 0 6px}
 .field{width:100%;min-height:48px;border:1px solid var(--ink);border-radius:2px;background:transparent;color:var(--ink);font:300 15px var(--sans);padding:0 12px}
 .field::placeholder{color:var(--ink-2)}

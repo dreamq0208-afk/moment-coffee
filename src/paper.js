@@ -1,6 +1,7 @@
 
 import html2canvas from 'html2canvas';
 import { fallbackBrewName, isValidBrewName, shareBrewName } from '../shared/brew-name.js';
+import { playIngredient, playBell, unlockSound } from './sound.js';
 (function(){
 "use strict";
 /* ---------- data ---------- */
@@ -125,7 +126,7 @@ class Glass{
   }
   clear(){this.liq.innerHTML='';this.fx.innerHTML='';this.cur={};this.order=[];this.nodes={};this.surface=G.bot}
   async drop(e){
-    if(reduce)return;
+    if(reduce||e==='calm')return;
     const x=110+rnd(-24,24);const g=el('g',{},this.fx);g.innerHTML=ingIcon(e);
     const target=this.surface-3;
     await tween(420,t=>g.setAttribute('transform',`translate(${x} ${30+(target-30)*t}) rotate(${t*120})`),easeIn);
@@ -140,8 +141,6 @@ class Glass{
     switch(e){
       case 'happy':[0,1,2].forEach(i=>floatUp(ingIcon('happy'),80+i*28,70,900,i*120));break;
       case 'excited':[0,1,2,3].forEach(i=>{setTimeout(()=>{const c=el('circle',{r:rnd(2.5,4),class:'ln-thin',fill:'rgba(255,255,255,.5)'},fx);const x=rnd(70,150),y0=G.bot-10;tween(700,t=>{c.setAttribute('cx',x+Math.sin(t*9)*3);c.setAttribute('cy',y0-(y0-s+4)*t)}).then(()=>c.remove())},i*110)});break;
-      case 'calm':{const g=el('g',{},fx);const o=el('path',{d:`M112 24L112 ${s}`,stroke:INK,'stroke-width':6,'stroke-linecap':'round'},g);const i=el('path',{d:`M112 24L112 ${s}`,stroke:'#FAF6EF','stroke-width':4,'stroke-linecap':'round'},g);
-        tween(260,t=>{const y=24+(s-24)*t;o.setAttribute('d',`M112 24L112 ${y}`);i.setAttribute('d',`M112 24L112 ${y}`)}).then(()=>tween(380,t=>{const y=24+(s-24)*t;o.setAttribute('d',`M112 ${y}L112 ${s}`);i.setAttribute('d',`M112 ${y}L112 ${s}`)})).then(()=>g.remove());break}
       case 'miss':floatUp(`<g transform="scale(1.3)">${ingIcon('miss')}</g>`,112,60,1100);break;
       case 'tired':{const g=el('g',{},fx);g.innerHTML=`<rect x="-9" y="-9" width="18" height="18" rx="3" fill="rgba(255,255,255,.75)" stroke="${INK}" stroke-width="1.2"/>`;
         tween(380,t=>g.setAttribute('transform',`translate(128 ${30+(s+10-30)*t})`),easeIn).then(()=>tween(700,t=>g.setAttribute('transform',`translate(128 ${s+10}) rotate(${Math.sin(t*Math.PI*4)*9*(1-t)})`))).then(()=>tween(300,t=>g.setAttribute('opacity',1-t))).then(()=>g.remove());break}
@@ -224,7 +223,7 @@ const openGlass=new Glass($('#openGlass'));openGlass.steamOn();
 let taps=0,tapStart=0;
 $('#startCup').addEventListener('click',()=>{const now=Date.now();if(now-tapStart>2000){taps=0;tapStart=now}taps++;if(taps>=5){taps=0;S.forceHidden=!S.forceHidden;toast(S.forceHidden?'下一杯必出隐藏款':'隐藏款恢复随机')}});
 $('#goMix').addEventListener('click',()=>{resetMix();show('s-mix')});
-$('#goRandom').addEventListener('click',randomCup);
+$('#goRandom').addEventListener('click',()=>{unlockSound();randomCup()});
 $('#toCabinet').addEventListener('click',()=>{cabFrom='s-start';openCabinet()});
 
 /* ---------- mix ---------- */
@@ -259,6 +258,7 @@ async function addEmo(e,quiet){
   if(!l&&S.layers.length>=4){$('#status').textContent='最多放四种';return}
   snap();if(l)l.p++;else S.layers.push({e,p:1});
   refreshMix();
+  playIngredient(e);
   await mixGlass.drop(e);
   const p=mixGlass.set(glassList());mixGlass.detail(e);await p;
 }
@@ -270,6 +270,7 @@ async function ring(){
   if(!total()){$('#status').textContent='先放点东西进去';return}
   if(S.busy&&!ring.auto)return;
   const b=$('#bellSvg');b.classList.remove('shake');void b.getBoundingClientRect();b.classList.add('shake');
+  playBell();
   $('#bellHint').innerHTML='叮——';
   await wait(650);S.busy=false;ring.auto=false;show('s-wait');setTimeout(()=>$('#msg').focus({preventScroll:true}),400);
 }
@@ -354,7 +355,7 @@ async function toReveal(){
   $('#tapeFill').setAttribute('stroke','#1C1B1A');$('#tapeFill').setAttribute('stroke-width','.8');
   $('#care').hidden=!c.crisis;
   $('#cupDate').textContent=fmtDate(c.createdAt,true);
-  nameEl.className='cup-name pending';nameEl.textContent='咖啡师在起名字…';
+  nameEl.className='cup-name pending';nameEl.textContent='这一杯，正在落款…';
   $('#noteText').innerHTML='<span class="writing">咖啡师在写纸条…</span>';
   note.classList.remove('in');sv.classList.remove('in');$('#confetti').innerHTML='';
   sv.innerHTML=vesselSVG(c,{anim:true,label:`${M(c).n}`});
